@@ -1,8 +1,14 @@
 'use server'
+import Home from "../components/Home";
 import Board from "./Board";
 
 const page = () => {
-  return <Board />;
+  return (
+    <div>
+      <Home />
+      <Board />
+    </div>
+  );
 }
 
 export default page;
