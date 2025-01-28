@@ -6,6 +6,8 @@ export const bestMove = (
   board: Array<'X' | 'O' | null>,
   player: 'X' | 'O',
 ) => {
+  console.log(board);
+  console.log(player);
   // AI to make its turn 
   let bestScore: number = -Infinity;
   let move: number = 0;
@@ -23,8 +25,7 @@ export const bestMove = (
     }
   }
 
-  console.log(board[move] = ai);
-  return board[move.i] = ai;
+  return board[move] = ai;
 }
 
 let scores = {
@@ -52,7 +53,8 @@ export const minimax = (board: Array<'X' | 'O' | null>, depth: number, isMaximiz
       }
     }
     return bestScore;
-  } else {
+  } 
+  else {
     let bestScore = Infinity;
     let human: 'X' | 'O' = ai === 'X' ? 'O' : 'X';
 

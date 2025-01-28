@@ -100,13 +100,6 @@ const Board = () => {
         </div>
       </div>
     ) : (
-      menuOpen ? (
-        <div className={`tham tham-e-squeeze tham-w-6 ${ "tham-active" }`}>
-      <div className="tham-box">
-        <div className="tham-inner" />
-      </div>
-    </div>
-      ) : (
         <div className="flex flex-col">
           <div className="flex justify-center my-10">
             {!winner && <p className="font-bold text-4xl">It's {currentPlayer} turn</p>}
@@ -138,7 +131,6 @@ const Board = () => {
         </div>)
 
     )
-  )
 }
 
 export default Board;
