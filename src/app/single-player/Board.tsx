@@ -30,6 +30,7 @@ const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
   const [player, setPlayer] = useState<'X' | 'O'>('X');
+  const [aiPlayer, setAiPlayer] = useState<'X'| 'O'>('O');
   const [winner, setWinner] = useState<Player>(null);
   const [isClicked, setIsClicked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -41,12 +42,13 @@ const Board = () => {
     setIsClicked(false);
     setCurrentPlayer('X');
     setPlayer('X');
+    setAiPlayer('O');
   }
 
   const aiPlay = () => {
-    if (player !== currentPlayer) {
+    if (aiPlayer === currentPlayer) {
       setTimeout(() => {
-        bestMove(squares, player);
+        bestMove(squares, player, aiPlayer);
         return setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
       }, 100)
     }
@@ -80,7 +82,8 @@ const Board = () => {
 
   // handle the player select click button
   const handleButtonClick = (player: 'X' | 'O') => {
-    setPlayer(player)
+    setPlayer(player);
+    setAiPlayer(player === 'X' ? 'O' : 'X');
     setIsClicked(true);
   }
 

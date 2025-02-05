@@ -2,21 +2,18 @@ import { calculateWinner } from "./Board";
 
 let ai: 'X' | 'O';
 
-export const bestMove = (
-  board: Array<'X' | 'O' | null>,
-  player: 'X' | 'O',
-) => {
-  console.log(board);
-  console.log(player);
+export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPlayer: 'X' | 'O',) => {
   // AI to make its turn 
   let bestScore: number = -Infinity;
   let move: number = 0;
-  ai = player === 'X' ? 'O' : 'X';
   for (let i: number = 0; i < 9; i++) {
     // Is the spot avaliable?
     if (board[i] == null) {
-      board[i] = ai;
-      let score = minimax(board, 0, false, ai);
+      board[i] = aiPlayer;
+
+      // 'false' leaves the 'X' impossible to defeat
+      let score = minimax(board, 0, false, aiPlayer, player);
+
       board[i] = null;
       if (score > bestScore) {
         bestScore = score;
@@ -25,46 +22,37 @@ export const bestMove = (
     }
   }
 
-  return board[move] = ai;
+  return board[move] = aiPlayer;
 }
 
-let scores = {
-  'X': 1,
-  'O': -1,
-  'BOTH': 0,
-}
-
-export const minimax = (board: Array<'X' | 'O' | null>, depth: number, isMaximizing: boolean, ai: 'X' | 'O') => {
+export const minimax = (board: Array<'X' | 'O' | null>, depth: number, isMaximizing: boolean, aiPlayer: 'X' | 'O', player: 'X' | 'O',) => {
   let result = calculateWinner(board);
 
-  if (result !== null) {
-    return scores[result];
-  }
+  if (result !== null && result === aiPlayer) return 10 - depth;
+  if (result !== null && result === player) return depth - 10;
+  if (result !== null && result === 'BOTH') return 0;
 
   if (isMaximizing) {
     let bestScore = -Infinity;
     for (let i: number = 0; i < 9; i++) {
       // Is the spot avaliable?
       if (board[i] == null) {
-        board[i] = ai;
-        let score = minimax(board, depth + 1, false, ai);
+        board[i] = aiPlayer;
+        bestScore = Math.max(bestScore, minimax(board, depth + 1, false, aiPlayer, player));
         board[i] = null
-        bestScore = Math.max(score, bestScore);
       }
     }
     return bestScore;
   } 
   else {
     let bestScore = Infinity;
-    let human: 'X' | 'O' = ai === 'X' ? 'O' : 'X';
 
     for (let i: number = 0; i < 9; i++) {
       // Is the spot avaliable?
       if (board[i] == null) {
-        board[i] = human;
-        let score = minimax(board, depth + 1, true, ai);
+        board[i] = player;
+        bestScore = Math.min(bestScore, minimax(board, depth + 1, true, aiPlayer, player));
         board[i] = null
-        bestScore = Math.min(score, bestScore);
       }
     }
     return bestScore;
