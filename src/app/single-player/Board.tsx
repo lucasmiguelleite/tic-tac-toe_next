@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import Square from "../components/Square";
 import { Player } from "@/types/Player";
 import { bestMove } from "./AI";
@@ -30,10 +30,12 @@ const Board = () => {
   const [squares, setSquares] = useState(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<'X' | 'O'>('X');
   const [player, setPlayer] = useState<'X' | 'O'>('X');
-  const [aiPlayer, setAiPlayer] = useState<'X'| 'O'>('O');
+  const [aiPlayer, setAiPlayer] = useState<'X' | 'O'>('O');
   const [winner, setWinner] = useState<Player>(null);
   const [isClicked, setIsClicked] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [difficultyIsSelect, setDifficultyIsSelect] = useState(false);
+  const [difficultySelected, setDifficultySelected] = useState<"easy" | "medium" | "hard">("medium");
 
   // reset the actual game state to the game start
   const reset = () => {
@@ -46,12 +48,8 @@ const Board = () => {
   }
 
   const aiPlay = () => {
-    if (aiPlayer === currentPlayer) {
-      setTimeout(() => {
-        bestMove(squares, player, aiPlayer);
-        return setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
-      }, 100)
-    }
+    bestMove(squares, player, aiPlayer, difficultySelected);
+    return setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
   }
 
   // handle the board click and change the player turn
@@ -77,7 +75,11 @@ const Board = () => {
       return setWinner("BOTH");
     }
 
-    aiPlay();
+    if (aiPlayer === currentPlayer) {
+      setTimeout(() => {
+        aiPlay();
+      }, 100)
+    }
   });
 
   // handle the player select click button
@@ -87,8 +89,29 @@ const Board = () => {
     setIsClicked(true);
   }
 
+  // handle the difficulty select click button
+  const handleDifficulty = (difficulty: "easy" | "medium" | "hard") => {
+    setDifficultySelected(difficulty);
+    setDifficultyIsSelect(true);
+  }
+
   return (
-    !isClicked ? (
+    !difficultyIsSelect ? (
+      <div className="relative">
+        <div className="static grid grid-cols-1 p-10 m-10 h-max mt-52">
+          <div className="inline-flex justify-center">
+            <p className="font-bold text-4xl mb-10">
+              Select the difficulty:
+            </p>
+          </div>
+          <div className="inline-flex columns-xs justify-center">
+            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
+            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
+            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
+          </div>
+        </div>
+      </div>
+    ) : !isClicked ? (
       <div className="relative">
         <div className="static grid grid-cols-1 p-10 m-10 h-max mt-52">
           <div className="inline-flex justify-center">
@@ -103,37 +126,37 @@ const Board = () => {
         </div>
       </div>
     ) : (
-        <div className="flex flex-col">
-          <div className="flex justify-center my-10">
-            {!winner && <p className="font-bold text-4xl">It's {currentPlayer} turn</p>}
-            {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
-            {winner && winner === 'BOTH' && (
-              <p className="font-bold text-4xl">Draw</p>
-            )}
+      <div className="flex flex-col">
+        <div className="flex justify-center my-10">
+          {!winner && <p className="font-bold text-4xl">It's {currentPlayer} turn</p>}
+          {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
+          {winner && winner === 'BOTH' && (
+            <p className="font-bold text-4xl">Draw</p>
+          )}
+        </div>
+        <div className="flex justify-center min-w-max">
+          <div className="grid gap-1 grid-cols-3 mb-5">
+            {Array(9)
+              .fill(null)
+              .map((_, i) => {
+                return (
+                  <Square
+                    winner={winner}
+                    key={i}
+                    onClick={() => setSquaresValue(i)}
+                    value={squares[i]}
+                    currentPlayer={currentPlayer}
+                  />
+                );
+              })}
           </div>
-          <div className="flex justify-center min-w-max">
-            <div className="grid gap-1 grid-cols-3 mb-5">
-              {Array(9)
-                .fill(null)
-                .map((_, i) => {
-                  return (
-                    <Square
-                      winner={winner}
-                      key={i}
-                      onClick={() => setSquaresValue(i)}
-                      value={squares[i]}
-                      currentPlayer={currentPlayer}
-                    />
-                  );
-                })}
-            </div>
-          </div>
-          <div className="flex justify-center ">
-            <button id="reset" className="border-0 border-black w-40 mt-2 text-4xl bg-blue-200 rounded-md p-1 cursor-pointer" onClick={reset}>RESET</button>
-          </div>
-        </div>)
+        </div>
+        <div className="flex justify-center ">
+          <button id="reset" className="border-0 border-black w-40 mt-2 text-4xl bg-blue-200 rounded-md p-1 cursor-pointer" onClick={reset}>RESET</button>
+        </div>
+      </div>)
 
-    )
+  )
 }
 
 export default Board;

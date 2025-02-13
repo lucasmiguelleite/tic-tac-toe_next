@@ -2,8 +2,28 @@ import { calculateWinner } from "./Board";
 
 let ai: 'X' | 'O';
 
-export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPlayer: 'X' | 'O',) => {
-  // AI to make its turn 
+export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPlayer: 'X' | 'O', difficulty: "easy" | "medium" | "hard",) => {
+  // "Easy" mode
+  if (difficulty === "easy" && Math.random() < 0.6){
+      // Choose a random play 60% of the times
+      const availableMoves = [];
+      for (let i: number = 0; i < 9; i++){
+        if(!board[i]) availableMoves.push(i);
+      }
+      return availableMoves.length > 0 ? board[availableMoves[Math.floor(Math.random() * availableMoves.length)]] = aiPlayer : null;
+  }
+
+  // "Medium" mode
+  if (difficulty === "medium" && Math.random() < 0.3){
+      // Choose a random play 30% of the times
+      const availableMoves = [];
+      for (let i: number = 0; i < 9; i++){
+        if(board[i]==null) availableMoves.push(i);
+      }
+      return availableMoves.length > 0 ? board[availableMoves[Math.floor(Math.random() * availableMoves.length)]] = aiPlayer : null;
+  }
+  
+  // "Hard" mode
   let bestScore: number = -Infinity;
   let move: number = 0;
   for (let i: number = 0; i < 9; i++) {
