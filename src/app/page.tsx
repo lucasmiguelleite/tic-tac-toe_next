@@ -11,7 +11,7 @@ export default function Home() {
       </div>
       <div className="grid grid-cols-1 p-10 mt-20 align-middle">
         <div className="flex inline-flex justify-center">
-          <h1 className="font-bold text-4xl mb-10">
+          <h1 className="font-bold text-4xl text-center mb-10">
             Select one option:
           </h1>
         </div>

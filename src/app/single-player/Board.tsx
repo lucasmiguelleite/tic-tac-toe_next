@@ -93,24 +93,24 @@ const Board = () => {
   return (
     !difficultyIsSelect ? (
       <div className="relative">
-        <div className="static grid grid-cols-1 p-10 m-10 h-max mt-52">
+        <div className="static grid grid-cols-1 mx-10 h-max md:mt-52">
           <div className="inline-flex justify-center">
-            <p className="font-bold text-4xl mb-10">
+            <p className="font-bold text-4xl mb-10 text-center">
               Select the difficulty:
             </p>
           </div>
-          <div className="inline-flex columns-xs justify-center">
-            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
-            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
-            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
+          <div className="flex flex-wrap md:flex-nowrap justify-center">
+            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
+            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
+            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
           </div>
         </div>
       </div>
     ) : !isClicked ? (
       <div className="relative">
-        <div className="static grid grid-cols-1 p-10 m-10 h-max mt-52">
+        <div className="static grid grid-cols-1 mx-10 h-max md:mt-52">
           <div className="inline-flex justify-center">
-            <p className="font-bold text-4xl mb-10">
+            <p className="font-bold text-4xl mb-10 text-center">
               Select the player:
             </p>
           </div>
@@ -122,7 +122,7 @@ const Board = () => {
       </div>
     ) : (
       <div className="flex flex-col">
-        <div className="flex justify-center my-10">
+        <div className="flex justify-center my-10 mx-10">
           {!winner && <p className="font-bold text-4xl">It&apos;s {currentPlayer} turn</p>}
           {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
           {winner && winner === 'BOTH' && (

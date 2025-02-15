@@ -1,11 +1,11 @@
 const Home = () => {
   return (
     <div>
+      <div className="my-10 md:mx-10 mx-2">
       <a href="/">
-      <div className="mt-10 ms-10">
-        <h1 className="font-bold text-6xl">Tic-Tac-Toe #</h1>
-      </div>
+        <h1 className="font-bold text-6xl text-center md:text-left">Tic-Tac-Toe #</h1>
       </a>
+      </div>
     </div>
   )
 }
