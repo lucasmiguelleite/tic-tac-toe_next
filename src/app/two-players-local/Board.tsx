@@ -58,12 +58,12 @@ const Board = () => {
     if (!winner && !squares.filter((square) => !square).length) {
       setWinner("BOTH");
     }
-  });
+  }, [squares]);
 
   return (
       <div className="flex flex-col">
         <div className="flex justify-center my-10">
-          {!winner && <p className="font-bold text-4xl">It's {currentPlayer} turn</p>}
+          {!winner && <p className="font-bold text-4xl">It&apos;s {currentPlayer} turn</p>}
           {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
           {winner && winner === 'BOTH' && (
             <p className="font-bold text-4xl">Draw</p>

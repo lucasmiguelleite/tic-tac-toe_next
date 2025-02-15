@@ -33,7 +33,6 @@ const Board = () => {
   const [aiPlayer, setAiPlayer] = useState<'X' | 'O'>('O');
   const [winner, setWinner] = useState<Player>(null);
   const [isClicked, setIsClicked] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [difficultyIsSelect, setDifficultyIsSelect] = useState(false);
   const [difficultySelected, setDifficultySelected] = useState<"easy" | "medium" | "hard">("medium");
 
@@ -45,11 +44,6 @@ const Board = () => {
     setCurrentPlayer('X');
     setPlayer('X');
     setAiPlayer('O');
-  }
-
-  const aiPlay = () => {
-    bestMove(squares, player, aiPlayer, difficultySelected);
-    return setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
   }
 
   // handle the board click and change the player turn
@@ -77,10 +71,11 @@ const Board = () => {
 
     if (aiPlayer === currentPlayer) {
       setTimeout(() => {
-        aiPlay();
+          bestMove(squares, player, aiPlayer, difficultySelected);
+          return setCurrentPlayer(currentPlayer === 'X' ? 'O' : 'X');
       }, 100)
     }
-  });
+  }, [squares, aiPlayer, currentPlayer, player, difficultySelected]);
 
   // handle the player select click button
   const handleButtonClick = (player: 'X' | 'O') => {
@@ -128,7 +123,7 @@ const Board = () => {
     ) : (
       <div className="flex flex-col">
         <div className="flex justify-center my-10">
-          {!winner && <p className="font-bold text-4xl">It's {currentPlayer} turn</p>}
+          {!winner && <p className="font-bold text-4xl">It&apos;s {currentPlayer} turn</p>}
           {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
           {winner && winner === 'BOTH' && (
             <p className="font-bold text-4xl">Draw</p>

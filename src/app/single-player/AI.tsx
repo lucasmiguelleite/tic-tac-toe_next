@@ -1,7 +1,5 @@
 import { calculateWinner } from "./Board";
 
-let ai: 'X' | 'O';
-
 export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPlayer: 'X' | 'O', difficulty: "easy" | "medium" | "hard",) => {
   // "Easy" mode
   if (difficulty === "easy" && Math.random() < 0.6){
@@ -32,7 +30,7 @@ export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPl
       board[i] = aiPlayer;
 
       // 'false' leaves the 'X' impossible to defeat
-      let score = minimax(board, 0, false, aiPlayer, player);
+      const score = minimax(board, 0, false, aiPlayer, player);
 
       board[i] = null;
       if (score > bestScore) {
@@ -46,7 +44,7 @@ export const bestMove = (board: Array<'X' | 'O' | null>, player: 'X' | 'O', aiPl
 }
 
 export const minimax = (board: Array<'X' | 'O' | null>, depth: number, isMaximizing: boolean, aiPlayer: 'X' | 'O', player: 'X' | 'O',) => {
-  let result = calculateWinner(board);
+  const result = calculateWinner(board);
 
   if (result !== null && result === aiPlayer) return 10 - depth;
   if (result !== null && result === player) return depth - 10;
