@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import Square from "../components/Square";
 import { Player } from "@/types/Player";
 import { bestMove } from "./AI";
+import { redirect } from 'next/navigation';
 
 export const calculateWinner = (squares: Player[]) => {
   const lines = [
@@ -37,13 +38,15 @@ const Board = () => {
   const [difficultySelected, setDifficultySelected] = useState<"easy" | "medium" | "hard">("medium");
 
   // reset the actual game state to the game start
-  const reset = () => {
+  const restart = () => {
     setSquares(Array(9).fill(null));
     setWinner(null);
-    setIsClicked(false);
     setCurrentPlayer('X');
-    setPlayer('X');
-    setAiPlayer('O');
+  }
+
+  // exit actual game
+  const exit = () => {
+    redirect("/");
   }
 
   // handle the board click and change the player turn
@@ -122,7 +125,7 @@ const Board = () => {
       </div>
     ) : (
       <div className="flex flex-col">
-        <div className="flex justify-center my-10 mx-10">
+        <div className="flex justify-center text-center my-10 mx-10">
           {!winner && <p className="font-bold text-4xl">It&apos;s {currentPlayer} turn</p>}
           {winner && winner !== 'BOTH' && <p className="font-bold text-4xl">Player {winner} is the winner</p>}
           {winner && winner === 'BOTH' && (
@@ -146,8 +149,9 @@ const Board = () => {
               })}
           </div>
         </div>
-        <div className="flex justify-center ">
-          <button id="reset" className="border-0 border-black w-40 mt-2 text-4xl bg-blue-200 rounded-md p-1 cursor-pointer" onClick={reset}>RESET</button>
+        <div className="flex flex-wrap md:flex-nowrap justify-center ">
+          <button className="border-0 border-black w-40 my-3 mx-2 text-4xl bg-blue-200 rounded-md p-1 cursor-pointer" onClick={restart}>Restart Game</button>
+          <button className="border-0 border-black w-40 my-3 mx-2 text-4xl bg-blue-200 rounded-md p-1 cursor-pointer" onClick={exit}>Exit Game</button>
         </div>
       </div>)
 

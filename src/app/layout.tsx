@@ -5,7 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "Tic Tac Toe",
-  description: "A basic Tic Tac Toe game in nextjs",
+  description: "A basic Tic Tac Toe site in nextjs",
 };
 
 export default function RootLayout({
