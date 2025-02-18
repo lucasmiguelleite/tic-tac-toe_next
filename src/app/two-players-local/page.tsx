@@ -1,4 +1,5 @@
 'use server'
+import Footer from "../components/Footer";
 import Home from "../components/Home";
 import Board from "./Board";
 
@@ -7,6 +8,7 @@ const page = () => {
     <div>
       <Home/>
       <Board />
+      <Footer/>
     </div>
   );
 }
