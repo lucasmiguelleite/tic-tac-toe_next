@@ -102,10 +102,10 @@ const Board = () => {
               Select the difficulty:
             </p>
           </div>
-          <div className="flex flex-wrap md:flex-nowrap justify-center">
-            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
-            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
-            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 mb-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
+          <div className="flex flex-wrap md:flex-nowrap justify-center mb-12">
+            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
+            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
+            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
           </div>
         </div>
       </div>
@@ -117,7 +117,7 @@ const Board = () => {
               Select the player:
             </p>
           </div>
-          <div className="inline-flex columns-xs justify-center">
+          <div className="inline-flex columns-xs justify-center mb-12">
             <button onClick={() => handleButtonClick('X')} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">X</p></button>
             <button onClick={() => handleButtonClick('O')} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">O</p></button>
           </div>
