@@ -1,16 +1,15 @@
-'use server'
 import Footer from "../components/Footer";
 import Home from "../components/Home";
 import Board from "./Board";
 
-const page = () => {
+const page = async () => {
   return (
     <div>
-      <Home/>
+      <Home />
       <Board />
-      <Footer/>
+      <Footer />
     </div>
   );
-}
+};
 
 export default page;
