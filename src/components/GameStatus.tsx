@@ -42,11 +42,11 @@ const GameStatus = ({
   return (
     <div className="flex justify-center text-center my-10 mx-10">
       {!winner && (
-        <p className="font-bold text-4xl">
+        <p className="font-bold text-2xl sm:text-4xl text-center max-w-full break-all">
           {yourRole
             ? currentPlayer === yourRole
               ? 'Your turn'
-              : `${playerName(currentPlayer)}'s turn`
+              : <span className="block truncate max-w-[60vw] sm:max-w-none mx-auto">{playerName(currentPlayer)}'s turn</span>
             : `It's ${currentPlayer} turn`}
         </p>
       )}
