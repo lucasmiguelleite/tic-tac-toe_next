@@ -68,7 +68,7 @@ export const useOnlineGame = (nickname?: string) => {
       } catch {
         // Network error, retry on next interval
       }
-    }, 1500);
+    }, 1000);
     return () => clearInterval(interval);
   }, [phase, roomId, playerId, fetchState]);
 
@@ -119,6 +119,19 @@ export const useOnlineGame = (nickname?: string) => {
     }, 2000);
     return () => clearInterval(interval);
   }, [phase, queueId]);
+
+  // Notify server on tab close / navigate away
+  useEffect(() => {
+    if (!roomId || !playerId) return;
+    const handleUnload = () => {
+      navigator.sendBeacon(
+        '/api/online/room/disconnect',
+        JSON.stringify({ roomId, playerId }),
+      );
+    };
+    window.addEventListener('beforeunload', handleUnload);
+    return () => window.removeEventListener('beforeunload', handleUnload);
+  }, [roomId, playerId]);
 
   // Transition from matched to playing after showing match screen
   useEffect(() => {
@@ -265,6 +278,12 @@ export const useOnlineGame = (nickname?: string) => {
   }, [roomId, playerId]);
 
   const exit = useCallback(() => {
+    if (roomId && playerId) {
+      navigator.sendBeacon(
+        '/api/online/room/disconnect',
+        JSON.stringify({ roomId, playerId }),
+      );
+    }
     setPhase('select-mode');
     setRoomId(null);
     setPlayerId(null);

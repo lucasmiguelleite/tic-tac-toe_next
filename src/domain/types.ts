@@ -18,6 +18,7 @@ export type Room = {
   lastSeenX: number;
   lastSeenO: number;
   restartRequestedBy: Player | null;
+  disconnected: Player | null;
   createdAt: number;
 };
 

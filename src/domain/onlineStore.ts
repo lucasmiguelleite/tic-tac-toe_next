@@ -45,6 +45,7 @@ export const createRoom = (nickname?: string) => {
     lastSeenX: now,
     lastSeenO: 0,
     restartRequestedBy: null,
+    disconnected: null,
     createdAt: now,
   };
 
@@ -73,6 +74,13 @@ export const updateRoom = (roomId: string, updates: Partial<Room>) => {
   if (!room) return undefined;
   Object.assign(room, updates);
   return room;
+};
+
+export const disconnectPlayer = (roomId: string, playerId: string) => {
+  const room = rooms.get(roomId);
+  if (!room) return;
+  if (room.playerX === playerId) room.disconnected = 'X';
+  else if (room.playerO === playerId) room.disconnected = 'O';
 };
 
 export const enterQueue = (nickname?: string) => {

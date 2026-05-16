@@ -25,9 +25,9 @@ export async function GET(request: Request) {
 
   const yourRole = room.playerX === playerId ? 'X' : room.playerO === playerId ? 'O' : null;
   const opponentLastSeen = yourRole === 'X' ? room.lastSeenO : room.lastSeenX;
-  const opponentConnected = room.status === 'waiting'
-    ? false
-    : opponentLastSeen > 0 && now - opponentLastSeen < 15000;
+  const opponentDisconnected = room.disconnected && room.disconnected !== yourRole;
+  const opponentConnected = !opponentDisconnected && room.status !== 'waiting'
+    && opponentLastSeen > 0 && now - opponentLastSeen < 5000;
 
   return NextResponse.json({
     board: room.board,
