@@ -20,11 +20,10 @@ export const useGameState = () => {
 
   const makeMove = useCallback((index: number) => {
     setSquares((prev) => {
-      const next = engineMakeMove(prev, index, currentPlayer);
-      if (next === prev) return prev;
-      setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
-      return next;
+      if (prev[index]) return prev;
+      return prev.map((cell, i) => (i === index ? currentPlayer : cell));
     });
+    setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
   }, [currentPlayer]);
 
   const restart = useCallback(() => {

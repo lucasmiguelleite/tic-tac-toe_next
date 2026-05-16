@@ -40,11 +40,10 @@ export const useSinglePlayerGame = () => {
   const makeMove = useCallback((index: number) => {
     if (currentPlayer !== player) return;
     setSquares((prev) => {
-      const next = engineMakeMove(prev, index, currentPlayer);
-      if (next === prev) return prev;
-      setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
-      return next;
+      if (prev[index]) return prev;
+      return prev.map((cell, i) => (i === index ? currentPlayer : cell));
     });
+    setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
   }, [currentPlayer, player]);
 
   const restart = useCallback(() => {
