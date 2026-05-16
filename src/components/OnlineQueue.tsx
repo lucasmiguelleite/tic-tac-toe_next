@@ -1,14 +1,31 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useSettings } from '@/context/SettingsContext';
+
+const formatTime = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
 
 const OnlineQueue = ({ onCancel }: { onCancel: () => void }) => {
   const { t } = useSettings();
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => setElapsed((e) => e + 1), 1000);
+    return () => clearInterval(id);
+  }, []);
+
   return (
     <div className="relative">
       <div className="static grid grid-cols-1 mx-10 h-max md:mt-52">
         <div className="inline-flex justify-center mb-10">
           <p className="font-bold text-4xl text-center">{t('online.findingOpponent')}</p>
+        </div>
+        <div className="flex justify-center mb-4">
+          <p className="text-lg text-gray-500 dark:text-gray-400 font-mono">{formatTime(elapsed)}</p>
         </div>
         <div className="flex justify-center mb-12">
           <div className="relative w-20 h-20">
