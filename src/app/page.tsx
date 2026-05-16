@@ -33,6 +33,14 @@ export default function Home() {
                 <p className="font-bold">Multiplayer Local</p>
               </button>
             </div>
+            <div className="flex justify-center mb-5">
+              <button
+                onClick={() => router.push("/online")}
+                className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 text-center w-52 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500 "
+              >
+                <p className="font-bold">Online Multiplayer</p>
+              </button>
+            </div>
           </div>
         </div>
       </div>

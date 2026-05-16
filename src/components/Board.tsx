@@ -7,10 +7,12 @@ const Board = ({
   squares,
   onSquareClick,
   winner,
+  isYourTurn = true,
 }: {
   squares: BoardState;
   onSquareClick: (index: number) => void;
   winner: GameResult;
+  isYourTurn?: boolean;
 }) => (
   <div className="flex justify-center min-w-max">
     <div className="grid gap-1 grid-cols-3 mb-5">
@@ -19,7 +21,7 @@ const Board = ({
           key={i}
           value={value}
           onClick={() => onSquareClick(i)}
-          disabled={Boolean(winner)}
+          disabled={Boolean(winner) || !isYourTurn}
         />
       ))}
     </div>
