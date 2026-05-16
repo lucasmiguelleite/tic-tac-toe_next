@@ -103,9 +103,9 @@ const Board = () => {
             </p>
           </div>
           <div className="flex flex-wrap md:flex-nowrap justify-center mb-12">
-            <button onClick={() => handleDifficulty("easy")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Easy</p></button>
-            <button onClick={() => handleDifficulty("medium")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Medium</p></button>
-            <button onClick={() => handleDifficulty("hard")} className="border rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">Hard</p></button>
+            <button onClick={() => handleDifficulty("easy")} className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"><p className="font-bold text-2xl">Easy</p></button>
+            <button onClick={() => handleDifficulty("medium")} className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"><p className="font-bold text-2xl">Medium</p></button>
+            <button onClick={() => handleDifficulty("hard")} className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 mb-2 md:mb-0 text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"><p className="font-bold text-2xl">Hard</p></button>
           </div>
         </div>
       </div>
@@ -118,8 +118,8 @@ const Board = () => {
             </p>
           </div>
           <div className="inline-flex columns-xs justify-center mb-12">
-            <button onClick={() => handleButtonClick('X')} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">X</p></button>
-            <button onClick={() => handleButtonClick('O')} className="border rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white"><p className="font-bold text-2xl">O</p></button>
+            <button onClick={() => handleButtonClick('X')} className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"><p className="font-bold text-2xl">X</p></button>
+            <button onClick={() => handleButtonClick('O')} className="border border-gray-300 dark:border-gray-600 rounded-full mr-2 text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"><p className="font-bold text-2xl">O</p></button>
           </div>
         </div>
       </div>
@@ -150,8 +150,8 @@ const Board = () => {
           </div>
         </div>
         <div className="flex flex-wrap md:flex-nowrap justify-center ">
-          <button className="border-0 border-black w-40 mt-3 mx-2 text-4xl bg-blue-200 hover:bg-blue-400 rounded-md p-1 cursor-pointer" onClick={restart}>Restart Game</button>
-          <button className="border-0 border-black w-40 mt-3 mx-2 text-4xl bg-blue-200 hover:bg-blue-400 rounded-md p-1 cursor-pointer" onClick={exit}>Exit Game</button>
+          <button className="border-0 border-black w-40 mt-3 mx-2 text-4xl bg-blue-200 dark:bg-blue-900 hover:bg-blue-400 dark:hover:bg-blue-700 rounded-md p-1 cursor-pointer" onClick={restart}>Restart Game</button>
+          <button className="border-0 border-black w-40 mt-3 mx-2 text-4xl bg-blue-200 dark:bg-blue-900 hover:bg-blue-400 dark:hover:bg-blue-700 rounded-md p-1 cursor-pointer" onClick={exit}>Exit Game</button>
         </div>
       </div>)
 

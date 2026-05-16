@@ -15,12 +15,12 @@ const Square = ({
 }) => {
   if (!value) {
     return (
-      <button className="max-w-60 max-h-60 min-h-24 min-w-24 text-7xl text-background border border-solid border-black rounded-lg hover:text-slate-300" onClick={onClick} disabled={Boolean(winner)}>{currentPlayer}</button>
+      <button className="max-w-60 max-h-60 min-h-24 min-w-24 text-7xl text-background border border-solid border-black dark:border-gray-500 rounded-lg hover:text-slate-300" onClick={onClick} disabled={Boolean(winner)}>{currentPlayer}</button>
     );
   }
   return (
     <button
-      className={`${value === 'X' ? "bg-green-500" : "bg-red-600"} max-w-60 max-h-60 min-h-24 min-w-24 text-7xl text-slate-200 border border-solid border-black rounded-lg`}
+      className={`${value === 'X' ? "bg-green-500" : "bg-red-600"} max-w-60 max-h-60 min-h-24 min-w-24 text-7xl text-slate-200 border border-solid border-black dark:border-gray-500 rounded-lg`}
       disabled>{value}</button>
   );
 }
