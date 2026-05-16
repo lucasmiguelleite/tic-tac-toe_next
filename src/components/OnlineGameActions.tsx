@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Player } from '@/domain/types';
+import { useSettings } from '@/context/SettingsContext';
 
 const OnlineGameActions = ({
   onExit,
@@ -16,24 +17,25 @@ const OnlineGameActions = ({
   restartRequestedBy: Player | null;
   yourRole: Player | null;
 }) => {
+  const { t } = useSettings();
   const [confirmExit, setConfirmExit] = useState(false);
 
   if (confirmExit) {
     return (
       <div className="flex flex-col items-center gap-3 mt-3">
-        <p className="text-2xl font-bold">Leave the match?</p>
+        <p className="text-2xl font-bold">{t('online.leaveMatch')}</p>
         <div className="flex gap-3">
           <button
             className="w-36 h-10 bg-red-500 hover:bg-red-600 text-white rounded-md font-bold text-lg cursor-pointer"
             onClick={onExit}
           >
-            Yes, leave
+            {t('online.yesLeave')}
           </button>
           <button
             className="w-28 h-10 border border-gray-300 dark:border-gray-600 rounded-md font-bold text-lg hover:bg-gray-200 dark:hover:bg-gray-700 cursor-pointer"
             onClick={() => setConfirmExit(false)}
           >
-            Cancel
+            {t('online.cancel')}
           </button>
         </div>
       </div>
@@ -60,7 +62,7 @@ const OnlineGameActions = ({
             onClick={onPlayAgain}
             disabled={youClicked}
           >
-            {youClicked ? 'Waiting...' : 'Play Again'}
+            {youClicked ? t('online.waiting') : t('online.playAgain')}
           </button>
         </div>
       )}
@@ -68,7 +70,7 @@ const OnlineGameActions = ({
         className="border-0 border-black w-40 mt-3 mx-2 text-2xl bg-red-400 hover:bg-red-500 text-white rounded-md p-1 cursor-pointer"
         onClick={() => setConfirmExit(true)}
       >
-        Exit
+        {t('online.cancel')}
       </button>
     </div>
   );

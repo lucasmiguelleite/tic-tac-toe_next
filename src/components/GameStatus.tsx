@@ -1,4 +1,7 @@
+'use client';
+
 import { GameResult, Player } from '@/domain/types';
+import { useSettings } from '@/context/SettingsContext';
 
 const GameStatus = ({
   winner,
@@ -17,10 +20,12 @@ const GameStatus = ({
   yourNickname?: string;
   waitingForOpponentRestart?: boolean;
 }) => {
+  const { t } = useSettings();
+
   if (waitingForOpponentRestart) {
     return (
       <div className="flex justify-center text-center my-10 mx-10">
-        <p className="font-bold text-3xl">Waiting for opponent to restart...</p>
+        <p className="font-bold text-3xl">{t('status.waitingRestart')}</p>
       </div>
     );
   }
@@ -28,7 +33,7 @@ const GameStatus = ({
   if (opponentConnected === false) {
     return (
       <div className="flex justify-center text-center my-10 mx-10">
-        <p className="font-bold text-3xl text-red-500">Opponent disconnected</p>
+        <p className="font-bold text-3xl text-red-500">{t('status.opponentDisconnected')}</p>
       </div>
     );
   }
@@ -45,21 +50,21 @@ const GameStatus = ({
         <p className="font-bold text-2xl sm:text-4xl text-center max-w-full break-all">
           {yourRole
             ? currentPlayer === yourRole
-              ? 'Your turn'
-              : <span className="block truncate max-w-[60vw] sm:max-w-none mx-auto">{playerName(currentPlayer)}'s turn</span>
-            : `It's ${currentPlayer} turn`}
+              ? t('status.yourTurn')
+              : <span className="block truncate max-w-[60vw] sm:max-w-none mx-auto">{t('status.playerTurn', { name: playerName(currentPlayer) })}</span>
+            : t('status.itsTurn', { player: currentPlayer })}
         </p>
       )}
       {winner && winner !== 'BOTH' && (
         <p className="font-bold text-4xl">
           {yourRole
             ? winner === yourRole
-              ? 'You win!'
-              : 'You lose!'
-            : `Player ${winner} is the winner`}
+              ? t('status.youWin')
+              : t('status.youLose')
+            : t('status.playerWins', { player: winner })}
         </p>
       )}
-      {winner === 'BOTH' && <p className="font-bold text-4xl">Draw</p>}
+      {winner === 'BOTH' && <p className="font-bold text-4xl">{t('status.draw')}</p>}
     </div>
   );
 };

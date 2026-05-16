@@ -10,11 +10,13 @@ import OnlineMatchmaking from '../../components/OnlineMatchmaking';
 import OnlineLobby from '../../components/OnlineLobby';
 import OnlineQueue from '../../components/OnlineQueue';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
+import { useSettings } from '../../context/SettingsContext';
 
 const OnlinePage = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
   const game = useOnlineGame(nicknameSet ? nickname : undefined);
+  const { t } = useSettings();
 
   if (!nicknameSet) {
     return (
@@ -23,7 +25,7 @@ const OnlinePage = () => {
         <div className="relative">
           <div className="static grid grid-cols-1 mx-10 h-max md:mt-40">
             <div className="inline-flex justify-center">
-              <p className="font-bold text-4xl mb-10 text-center">Choose your nickname:</p>
+              <p className="font-bold text-4xl mb-10 text-center">{t('online.chooseNickname')}</p>
             </div>
             <div className="flex flex-col items-center gap-4">
               <input
@@ -31,7 +33,7 @@ const OnlinePage = () => {
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
                 maxLength={20}
-                placeholder="Your nickname (optional)"
+                placeholder={t('online.nicknamePlaceholder')}
                 className="text-2xl font-bold text-center w-72 h-14 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 onKeyDown={(e) => e.key === 'Enter' && setNicknameSet(true)}
               />
@@ -39,7 +41,7 @@ const OnlinePage = () => {
                 onClick={() => setNicknameSet(true)}
                 className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-40 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
               >
-                <p className="font-bold">Continue</p>
+                <p className="font-bold">{t('online.continue')}</p>
               </button>
             </div>
           </div>
@@ -71,7 +73,7 @@ const OnlinePage = () => {
       )}
       {game.phase === 'matched' && (
         <div className="flex flex-col items-center justify-center md:mt-52">
-          <p className="font-bold text-5xl mb-6 animate-bounce">Match found!</p>
+          <p className="font-bold text-5xl mb-6 animate-bounce">{t('online.matchFound')}</p>
           <div className="flex gap-2">
             {[0, 1, 2].map((i) => (
               <div
@@ -116,7 +118,7 @@ const OnlinePage = () => {
             onClick={game.exit}
             className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-40 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
           >
-            <p className="font-bold">Try Again</p>
+            <p className="font-bold">{t('online.tryAgain')}</p>
           </button>
         </div>
       )}

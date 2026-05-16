@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-import ThemeToggle from "../components/ThemeToggle";
+import { SettingsProvider } from "@/context/SettingsContext";
+import SettingsBar from "@/components/SettingsBar";
 import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
@@ -18,11 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
-        <ThemeToggle />
-        <main className="flex-1">{children}</main>
+        <SettingsProvider>
+          <SettingsBar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </SettingsProvider>
         <SpeedInsights />
         <Analytics />
-        <Footer />
       </body>
     </html>
   );
