@@ -59,8 +59,18 @@ const randomMove = (board: BoardState, aiPlayer: Player): number => {
     return acc;
   }, []);
   if (available.length === 0) return -1;
-  const index = Math.floor(Math.random() * available.length);
-  return available[index];
+  return available[Math.floor(Math.random() * available.length)];
+};
+
+type DifficultyStrategy = (board: BoardState, aiPlayer: Player, humanPlayer: Player) => number;
+
+const difficultyStrategies: Record<Difficulty, DifficultyStrategy> = {
+  easy: (board, aiPlayer, _humanPlayer) =>
+    Math.random() < 0.6 ? randomMove(board, aiPlayer) : optimalMove(board, aiPlayer, _humanPlayer),
+  medium: (board, aiPlayer, humanPlayer) =>
+    Math.random() < 0.3 ? randomMove(board, aiPlayer) : optimalMove(board, aiPlayer, humanPlayer),
+  hard: (board, aiPlayer, humanPlayer) =>
+    optimalMove(board, aiPlayer, humanPlayer),
 };
 
 export const bestMove = (
@@ -70,13 +80,6 @@ export const bestMove = (
   difficulty: Difficulty,
 ): number => {
   const copy: BoardState = [...board];
-
-  if (difficulty === 'easy' && Math.random() < 0.6) {
-    return randomMove(copy, aiPlayer);
-  }
-  if (difficulty === 'medium' && Math.random() < 0.3) {
-    return randomMove(copy, aiPlayer);
-  }
-
-  return optimalMove(copy, aiPlayer, humanPlayer);
+  const strategy = difficultyStrategies[difficulty];
+  return strategy(copy, aiPlayer, humanPlayer);
 };
