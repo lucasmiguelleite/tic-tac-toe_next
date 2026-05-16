@@ -18,9 +18,30 @@ export const useOnlineGame = (nickname?: string) => {
   const [error, setError] = useState<string | null>(null);
   const [restartRequestedBy, setRestartRequestedBy] = useState<Player | null>(null);
 
+  const fetchState = useCallback(async () => {
+    if (!roomId || !playerId) return;
+    try {
+      const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setSquares(data.board);
+        setCurrentPlayer(data.currentPlayer);
+        setWinner(data.winner);
+        setOpponentConnected(data.opponentConnected);
+        if (data.yourRole) setYourRole(data.yourRole);
+        if (data.yourNickname) setYourNickname(data.yourNickname);
+        if (data.opponentNickname) setOpponentNickname(data.opponentNickname);
+        setRestartRequestedBy(data.restartRequestedBy || null);
+      }
+    } catch {
+      // Will be retried by polling
+    }
+  }, [roomId, playerId]);
+
   // Poll game state when playing
   useEffect(() => {
     if (phase !== 'playing' || !roomId || !playerId) return;
+    fetchState();
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
@@ -38,8 +59,6 @@ export const useOnlineGame = (nickname?: string) => {
           if (data.yourRole) setYourRole(data.yourRole);
           if (data.yourNickname) setYourNickname(data.yourNickname);
           if (data.opponentNickname) setOpponentNickname(data.opponentNickname);
-
-          // Sync restart state from server
           setRestartRequestedBy(data.restartRequestedBy || null);
 
           if (!data.opponentConnected && data.roomStatus === 'playing') {
@@ -51,7 +70,7 @@ export const useOnlineGame = (nickname?: string) => {
       }
     }, 1500);
     return () => clearInterval(interval);
-  }, [phase, roomId, playerId]);
+  }, [phase, roomId, playerId, fetchState]);
 
   // Poll lobby state (waiting for opponent to join)
   useEffect(() => {
@@ -62,8 +81,9 @@ export const useOnlineGame = (nickname?: string) => {
         if (res.ok) {
           const data = await res.json();
           if (data.roomStatus === 'playing') {
-            setPhase('playing');
+            if (data.yourNickname) setYourNickname(data.yourNickname);
             if (data.opponentNickname) setOpponentNickname(data.opponentNickname);
+            setPhase('playing');
           }
         }
       } catch {
@@ -103,9 +123,11 @@ export const useOnlineGame = (nickname?: string) => {
   // Transition from matched to playing after showing match screen
   useEffect(() => {
     if (phase !== 'matched') return;
+    // Pre-fetch state so nicknames are ready when game renders
+    fetchState();
     const timeout = setTimeout(() => setPhase('playing'), 2000);
     return () => clearTimeout(timeout);
-  }, [phase]);
+  }, [phase, fetchState]);
 
   const createRoom = useCallback(async () => {
     setPhase('creating-room');
@@ -146,6 +168,15 @@ export const useOnlineGame = (nickname?: string) => {
       setYourRole(data.playerRole);
       setYourNickname(data.nickname);
       setPhase('playing');
+      // Fetch full state immediately so nicknames are available
+      setTimeout(async () => {
+        const stateRes = await fetch(`/api/online/room/state?roomId=${code.toUpperCase().trim()}&playerId=${data.playerId}`);
+        if (stateRes.ok) {
+          const stateData = await stateRes.json();
+          if (stateData.yourNickname) setYourNickname(stateData.yourNickname);
+          if (stateData.opponentNickname) setOpponentNickname(stateData.opponentNickname);
+        }
+      }, 0);
     } catch {
       setError('Failed to join room');
       setPhase('error');
