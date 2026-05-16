@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/react";
-import ThemeToggle from "./components/ThemeToggle";
+import ThemeToggle from "../components/ThemeToggle";
+import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Tic Tac Toe",
@@ -21,6 +22,7 @@ export default function RootLayout({
         {children}
         <SpeedInsights />
         <Analytics />
+        <Footer />
       </body>
     </html>
   );
