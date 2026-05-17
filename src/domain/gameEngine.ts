@@ -15,6 +15,15 @@ export const calculateWinner = (squares: BoardState): GameResult => {
   return null;
 };
 
+export const getWinLine = (squares: BoardState): number[] | null => {
+  for (const [a, b, c] of WIN_LINES) {
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return [a, b, c];
+    }
+  }
+  return null;
+};
+
 export const checkDraw = (squares: BoardState): boolean => {
   if (calculateWinner(squares)) return false;
   return squares.every((cell) => cell !== null);
