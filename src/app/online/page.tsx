@@ -12,7 +12,7 @@ import OnlineQueue from '../../components/OnlineQueue';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
 import { useSettings } from '../../context/SettingsContext';
 import { getWinLine } from '../../domain/gameEngine';
-import { playWin, playLose, playEnterQueue, playMatchFound, playRestartVote } from '../../utils/sounds';
+import { playWin, playLose, playDraw, playEnterQueue, playMatchFound, playRestartVote, playDisconnect } from '../../utils/sounds';
 import { GameResult, Player } from '../../domain/types';
 
 const OnlinePage = () => {
@@ -31,12 +31,16 @@ const OnlinePage = () => {
     if (game.phase === 'matched' && prevPhaseRef.current !== 'matched') {
       playMatchFound();
     }
+    if (game.phase === 'opponent-disconnected' && prevPhaseRef.current !== 'opponent-disconnected') {
+      playDisconnect();
+    }
     prevPhaseRef.current = game.phase;
   }, [game.phase]);
 
   useEffect(() => {
-    if (game.winner && game.winner !== 'BOTH' && game.winner !== prevWinnerRef.current) {
-      game.winner === game.yourRole ? playWin() : playLose();
+    if (game.winner && game.winner !== prevWinnerRef.current) {
+      if (game.winner === 'BOTH') playDraw();
+      else game.winner === game.yourRole ? playWin() : playLose();
     }
     prevWinnerRef.current = game.winner;
   }, [game.winner, game.yourRole]);

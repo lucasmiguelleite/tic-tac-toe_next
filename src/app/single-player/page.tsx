@@ -10,7 +10,7 @@ import Board from "../../components/Board";
 import GameActions from "../../components/GameActions";
 import { useSinglePlayerGame } from "../../hooks/useSinglePlayerGame";
 import { getWinLine } from "../../domain/gameEngine";
-import { playWin, playLose } from "../../utils/sounds";
+import { playWin, playLose, playDraw } from "../../utils/sounds";
 import { GameResult } from "../../domain/types";
 
 const SinglePlayerPage = () => {
@@ -29,8 +29,9 @@ const SinglePlayerPage = () => {
   const prevWinnerRef = useRef<GameResult>(null);
 
   useEffect(() => {
-    if (winner && winner !== 'BOTH' && winner !== prevWinnerRef.current) {
-      winner === player ? playWin() : playLose();
+    if (winner && winner !== prevWinnerRef.current) {
+      if (winner === 'BOTH') playDraw();
+      else winner === player ? playWin() : playLose();
     }
     prevWinnerRef.current = winner;
   }, [winner, player]);
