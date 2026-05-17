@@ -7,10 +7,12 @@ const OnlineMatchmaking = ({
   onCreateRoom,
   onEnterQueue,
   onJoinRoom,
+  onBack,
 }: {
   onCreateRoom: () => void;
   onEnterQueue: () => void;
   onJoinRoom: (code: string) => void;
+  onBack: () => void;
 }) => {
   const { t } = useSettings();
   const [showJoin, setShowJoin] = useState(false);
@@ -79,6 +81,12 @@ const OnlineMatchmaking = ({
             className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-64 h-16 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
           >
             <p className="font-bold text-2xl">{t("online.joinRoom")}</p>
+          </button>
+          <button
+            onClick={onBack}
+            className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-64 h-16 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
+          >
+            <p className="font-bold text-2xl">{t("online.back")}</p>
           </button>
         </div>
       </div>

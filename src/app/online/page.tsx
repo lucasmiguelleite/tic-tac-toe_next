@@ -92,6 +92,7 @@ const OnlinePage = () => {
           onCreateRoom={game.createRoom}
           onEnterQueue={game.enterQueue}
           onJoinRoom={game.joinRoom}
+          onBack={() => { game.exit(); redirect('/'); }}
         />
       )}
       {(game.phase === 'creating-room' || game.phase === 'joining-room') && (
