@@ -53,6 +53,9 @@ const translations: Record<Locale, Record<string, string>> = {
     "sound.moves": "Moves",
     "sound.events": "Events",
     "sound.ui": "Interface",
+    "settings.title": "Settings",
+    "settings.theme": "Theme",
+    "settings.language": "Language",
     "online.roomExpires": "This room expires in:",
   },
   pt: {
@@ -107,6 +110,9 @@ const translations: Record<Locale, Record<string, string>> = {
     "sound.moves": "Jogadas",
     "sound.events": "Eventos",
     "sound.ui": "Interface",
+    "settings.title": "Configurações",
+    "settings.theme": "Tema",
+    "settings.language": "Idioma",
     "online.roomExpires": "Esta sala expira em:",
   },
 };
