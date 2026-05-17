@@ -39,5 +39,6 @@ export async function GET(request: Request) {
     yourNickname: yourRole === 'X' ? room.nicknameX : room.nicknameO,
     opponentNickname: yourRole === 'X' ? room.nicknameO : room.nicknameX,
     restartRequestedBy: room.restartRequestedBy,
+    createdAt: room.createdAt,
   });
 }

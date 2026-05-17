@@ -12,6 +12,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   const [yourNickname, setYourNickname] = useState('');
   const [opponentNickname, setOpponentNickname] = useState('');
   const [restartRequestedBy, setRestartRequestedBy] = useState<Player | null>(null);
+  const [createdAt, setCreatedAt] = useState<number | null>(null);
 
   const applyState = useCallback((data: Record<string, unknown>) => {
     setSquares(data.board as BoardState);
@@ -22,6 +23,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     if (data.yourNickname) setYourNickname(data.yourNickname as string);
     if (data.opponentNickname) setOpponentNickname(data.opponentNickname as string);
     setRestartRequestedBy((data.restartRequestedBy as Player) || null);
+    if (data.createdAt) setCreatedAt((prev) => prev ?? (data.createdAt as number));
   }, []);
 
   const fetchState = useCallback(async () => {
@@ -133,11 +135,12 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     setYourNickname('');
     setYourRole(null);
     setRestartRequestedBy(null);
+    setCreatedAt(null);
   }, []);
 
   return {
     squares, currentPlayer, winner, opponentConnected,
-    yourRole, yourNickname, opponentNickname, restartRequestedBy,
+    yourRole, yourNickname, opponentNickname, restartRequestedBy, createdAt,
     fetchState, pollGameState, pollLobby, applyState,
     makeMove, restart, setInitialRoomState, resetRoom,
   };

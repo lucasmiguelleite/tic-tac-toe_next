@@ -34,10 +34,11 @@ const OnlinePage = () => {
   const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
 
   useEffect(() => {
-    if ((game.phase === 'playing' || game.phase === 'opponent-disconnected') && roomRemaining === null) {
-      setRoomRemaining(ROOM_TTL);
+    if (game.createdAt) {
+      const elapsed = Math.floor((Date.now() - game.createdAt) / 1000);
+      setRoomRemaining(Math.max(ROOM_TTL - elapsed, 0));
     }
-  }, [game.phase, roomRemaining]);
+  }, [game.createdAt]);
 
   useEffect(() => {
     if (roomRemaining === null || roomRemaining <= 0) return;

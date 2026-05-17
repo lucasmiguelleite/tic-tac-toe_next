@@ -137,6 +137,7 @@ export const useOnlineGame = (nickname?: string) => {
     yourNickname: room.yourNickname,
     opponentNickname: room.opponentNickname,
     restartRequestedBy: room.restartRequestedBy,
+    createdAt: room.createdAt,
     createRoom, joinRoom, enterQueue,
     exitQueue: exitQueueAction,
     makeMove: room.makeMove,
