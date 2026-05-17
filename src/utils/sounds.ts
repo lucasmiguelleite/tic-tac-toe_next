@@ -33,6 +33,18 @@ export const playLose = () => {
   playTone(311.13, 0.4, 0.4, 'sawtooth', 0.06);
 };
 
+export const playDraw = () => {
+  playTone(440, 0, 0.15, 'triangle', 0.1);
+  playTone(415.30, 0.12, 0.15, 'triangle', 0.1);
+  playTone(440, 0.24, 0.2, 'triangle', 0.08);
+};
+
+export const playDisconnect = () => {
+  playTone(250, 0, 0.3, 'sawtooth', 0.1);
+  playTone(200, 0.15, 0.3, 'sawtooth', 0.08);
+  playTone(150, 0.3, 0.5, 'sawtooth', 0.06);
+};
+
 export const playEnterQueue = () => {
   playTone(440, 0, 0.15, 'sine', 0.1);
   playTone(523.25, 0.1, 0.2, 'sine', 0.1);
@@ -52,6 +64,11 @@ export const playRestartVote = () => {
 
 export const playClick = () => {
   playTone(660, 0, 0.06, 'sine', 0.08);
+};
+
+export const playMove = () => {
+  playTone(200, 0, 0.08, 'sawtooth', 0.12);
+  playTone(150, 0.02, 0.06, 'square', 0.06);
 };
 
 export const playExitWarning = () => {
