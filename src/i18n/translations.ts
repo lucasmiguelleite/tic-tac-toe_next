@@ -56,6 +56,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.title": "Settings",
     "settings.theme": "Theme",
     "settings.language": "Language",
+    "settings.boardStyle": "Board Style",
+    "boardStyle.classic": "Classic",
+    "boardStyle.paper": "Paper",
+    "boardStyle.neon": "Neon",
+    "boardStyle.chalk": "Chalk",
     "online.roomExpires": "This room expires in:",
   },
   pt: {
@@ -113,6 +118,11 @@ const translations: Record<Locale, Record<string, string>> = {
     "settings.title": "Configurações",
     "settings.theme": "Tema",
     "settings.language": "Idioma",
+    "settings.boardStyle": "Estilo do Tabuleiro",
+    "boardStyle.classic": "Clássico",
+    "boardStyle.paper": "Papel",
+    "boardStyle.neon": "Neon",
+    "boardStyle.chalk": "Lousa",
     "online.roomExpires": "Esta sala expira em:",
   },
 };

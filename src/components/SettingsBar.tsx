@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useSettings } from '@/context/SettingsContext';
+import BoardStyleSelector from './BoardStyleSelector';
 
 const SettingsBar = () => {
   const { theme, locale, sound, setTheme, setLocale, setSound, t } = useSettings();
@@ -53,6 +54,11 @@ const SettingsBar = () => {
               {locale === 'en' ? '🇧🇷 PT' : '🇺🇸 EN'}
             </button>
           </div>
+
+          <hr className="border-gray-200 dark:border-gray-700" />
+
+          {/* Board Style */}
+          <BoardStyleSelector />
 
           <hr className="border-gray-200 dark:border-gray-700" />
 

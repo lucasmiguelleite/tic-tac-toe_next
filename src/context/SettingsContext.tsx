@@ -5,6 +5,7 @@ import { Locale } from '@/i18n/translations';
 import { translate } from '@/i18n/translations';
 
 type Theme = 'light' | 'dark';
+export type BoardStyle = 'classic' | 'paper' | 'neon' | 'chalk';
 
 export type SoundSettings = {
   volume: number;
@@ -24,9 +25,11 @@ type SettingsContextType = {
   theme: Theme;
   locale: Locale;
   sound: SoundSettings;
+  boardStyle: BoardStyle;
   setTheme: (theme: Theme) => void;
   setLocale: (locale: Locale) => void;
   setSound: (settings: SoundSettings) => void;
+  setBoardStyle: (style: BoardStyle) => void;
   t: (key: string, params?: Record<string, string>) => string;
 };
 
@@ -42,6 +45,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
   const [theme, setThemeState] = useState<Theme>('light');
   const [locale, setLocaleState] = useState<Locale>('en');
   const [sound, setSoundState] = useState<SoundSettings>(defaultSoundSettings);
+  const [boardStyle, setBoardStyleState] = useState<BoardStyle>('classic');
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -54,10 +58,12 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     const initialLocale = storedLocale ||
       (navigator.language.startsWith('pt') ? 'pt' : 'en');
     const initialSound = storedSound ? { ...defaultSoundSettings, ...JSON.parse(storedSound) } : defaultSoundSettings;
+    const initialBoardStyle = (localStorage.getItem('boardStyle') as BoardStyle) || 'classic';
 
     setThemeState(initialTheme);
     setLocaleState(initialLocale);
     setSoundState(initialSound);
+    setBoardStyleState(initialBoardStyle);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
     setReady(true);
   }, []);
@@ -78,11 +84,16 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     localStorage.setItem('soundSettings', JSON.stringify(s));
   }, []);
 
+  const setBoardStyle = useCallback((style: BoardStyle) => {
+    setBoardStyleState(style);
+    localStorage.setItem('boardStyle', style);
+  }, []);
+
   const t = useCallback((key: string, params?: Record<string, string>) => {
     return translate(locale, key, params);
   }, [locale]);
 
-  const value = useMemo(() => ({ theme, locale, sound, setTheme, setLocale, setSound, t }), [theme, locale, sound, setTheme, setLocale, setSound, t]);
+  const value = useMemo(() => ({ theme, locale, sound, boardStyle, setTheme, setLocale, setSound, setBoardStyle, t }), [theme, locale, sound, boardStyle, setTheme, setLocale, setSound, setBoardStyle, t]);
 
   if (!ready) return null;
 
