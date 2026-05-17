@@ -1,9 +1,9 @@
 'use client';
 
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const GameActions = ({ onRestart, onExit }: { onRestart: () => void; onExit: () => void }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   return (
     <div className="flex flex-wrap md:flex-nowrap justify-center">
       <button

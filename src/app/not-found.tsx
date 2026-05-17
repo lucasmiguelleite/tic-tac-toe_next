@@ -1,9 +1,9 @@
 'use client'
 import { redirect } from "next/navigation"
-import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "@/context/SettingsContext";
 
 export default function NotFound() {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   return (
     <div>
       <h1 className='font-bold text-4xl my-10 text-center'>{t('notFound.title')}</h1>

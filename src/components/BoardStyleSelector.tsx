@@ -1,8 +1,7 @@
 'use client';
 
 import { BoardStyle, useSettings } from '@/context/SettingsContext';
-
-const styles: BoardStyle[] = ['classic', 'paper', 'neon', 'chalk'];
+import { boardStyleConfigs, boardStyleKeys } from '@/domain/boardStyles';
 
 const MiniSquare = ({ filled, style }: { filled: 'X' | 'O' | null; style: BoardStyle }) => {
   const base = 'w-2.5 h-2.5';
@@ -62,12 +61,9 @@ const BoardStyleSelector = () => {
     <div>
       <span className="text-sm">{t('settings.boardStyle')}</span>
       <div className="flex gap-2 mt-1.5">
-        {styles.map((style) => {
+        {boardStyleKeys.map((style) => {
           const selected = boardStyle === style;
-          const bgClass = style === 'paper' ? 'bg-[#f5f0e1]'
-            : style === 'neon' ? 'bg-gray-950'
-            : style === 'chalk' ? 'bg-[#2d4a3e]'
-            : '';
+          const config = boardStyleConfigs[style];
           return (
             <button
               key={style}
@@ -75,7 +71,7 @@ const BoardStyleSelector = () => {
               className={`flex flex-col items-center gap-0.5 p-1 rounded-md transition-all ${selected ? 'ring-2 ring-blue-500 scale-105' : 'hover:bg-gray-100 dark:hover:bg-gray-700 opacity-60 hover:opacity-100'}`}
               title={t(`boardStyle.${style}`)}
             >
-              <div className={`grid grid-cols-3 gap-px p-1 rounded ${bgClass}`}>
+              <div className={`grid grid-cols-3 gap-px p-1 rounded ${config.selectorBg}`}>
                 {miniBoard.map((cell, i) => (
                   <MiniSquare key={i} filled={cell} style={style} />
                 ))}

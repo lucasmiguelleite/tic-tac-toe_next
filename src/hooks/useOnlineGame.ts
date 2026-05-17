@@ -44,12 +44,15 @@ export const useOnlineGame = (nickname?: string) => {
     );
   }, [phase, queue.queueId, queue.pollQueue, room.setInitialRoomState, nickname]);
 
-  // Matched → playing transition
+  // Matched → playing transition (wait for both fetch + minimum UX delay)
   useEffect(() => {
     if (phase !== 'matched') return;
-    room.fetchState();
-    const timeout = setTimeout(() => setPhase('playing'), 2000);
-    return () => clearTimeout(timeout);
+    let cancelled = false;
+    const minDelay = new Promise<void>((r) => setTimeout(r, 1500));
+    Promise.all([room.fetchState(), minDelay]).then(() => {
+      if (!cancelled) setPhase('playing');
+    });
+    return () => { cancelled = true; };
   }, [phase, room.fetchState]);
 
   const createRoom = useCallback(async () => {

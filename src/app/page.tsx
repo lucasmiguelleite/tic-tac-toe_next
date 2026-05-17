@@ -1,10 +1,10 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "@/context/SettingsContext";
 
 export default function Home() {
   const router = useRouter();
-  const { t } = useSettings();
+  const { t } = useTranslation();
 
   return (
     <div>

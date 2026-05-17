@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { Locale } from '@/i18n/translations';
 import { translate } from '@/i18n/translations';
+import { updateSoundCache } from '@/utils/sounds';
 
 type Theme = 'light' | 'dark';
 export type BoardStyle = 'classic' | 'paper' | 'neon' | 'chalk';
@@ -41,6 +42,11 @@ export const useSettings = () => {
   return ctx;
 };
 
+export const useTranslation = () => {
+  const { t, locale } = useSettings();
+  return { t, locale };
+};
+
 export const SettingsProvider = ({ children }: { children: React.ReactNode }) => {
   const [theme, setThemeState] = useState<Theme>('light');
   const [locale, setLocaleState] = useState<Locale>('en');
@@ -63,6 +69,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     setThemeState(initialTheme);
     setLocaleState(initialLocale);
     setSoundState(initialSound);
+    updateSoundCache(initialSound);
     setBoardStyleState(initialBoardStyle);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
     setReady(true);
@@ -81,6 +88,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
   const setSound = useCallback((s: SoundSettings) => {
     setSoundState(s);
+    updateSoundCache(s);
     localStorage.setItem('soundSettings', JSON.stringify(s));
   }, []);
 

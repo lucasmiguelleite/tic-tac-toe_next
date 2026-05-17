@@ -1,4 +1,5 @@
 import { BoardState, Player, Room } from './types';
+import { generateId } from './utils';
 
 const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const ROOM_CODE_LENGTH = 6;
@@ -6,8 +7,7 @@ export const ROOM_TTL_MS = 30 * 60 * 1000;
 
 const rooms = new Map<string, Room>();
 
-export const generateId = (): string =>
-  Math.random().toString(36).substring(2) + Date.now().toString(36);
+export { generateId };
 
 const generateCode = (): string => {
   let code = '';

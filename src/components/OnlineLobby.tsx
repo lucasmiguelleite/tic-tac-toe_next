@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "@/context/SettingsContext";
 
 const TTL_SECONDS = 30 * 60;
 
@@ -18,7 +18,7 @@ const OnlineLobby = ({
   roomId: string;
   onCancel: () => void;
 }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   const [copied, setCopied] = useState(false);
   const [remaining, setRemaining] = useState(TTL_SECONDS);
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useSettings } from "@/context/SettingsContext";
+import { useTranslation } from "@/context/SettingsContext";
 
 const OnlineMatchmaking = ({
   onCreateRoom,
@@ -14,7 +14,7 @@ const OnlineMatchmaking = ({
   onJoinRoom: (code: string) => void;
   onBack: () => void;
 }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   const [showJoin, setShowJoin] = useState(false);
   const [code, setCode] = useState("");
 

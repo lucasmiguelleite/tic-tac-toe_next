@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const formatTime = (seconds: number) => {
   const m = Math.floor(seconds / 60);
@@ -10,7 +10,7 @@ const formatTime = (seconds: number) => {
 };
 
 const OnlineQueue = ({ onCancel }: { onCancel: () => void }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   const [elapsed, setElapsed] = useState(0);
 
   useEffect(() => {

@@ -1,7 +1,7 @@
 'use client';
 
 import { GameResult, Player } from '@/domain/types';
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 type LocalGameStatusProps = {
   winner: GameResult;
@@ -25,7 +25,7 @@ const GameStatusInner = ({
   yourNickname,
   waitingForOpponentRestart,
 }: LocalGameStatusProps & { yourRole?: Player; opponentConnected?: boolean; opponentNickname?: string; yourNickname?: string; waitingForOpponentRestart?: boolean }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
 
   if (waitingForOpponentRestart) {
     return (

@@ -1,5 +1,6 @@
 import { QueueEntry } from './types';
-import { generateId, createRoom, joinRoom, clearRooms } from './roomStore';
+import { generateId } from './utils';
+import { createRoom, joinRoom } from './roomStore';
 
 export const QUEUE_TTL_MS = 2 * 60 * 1000;
 

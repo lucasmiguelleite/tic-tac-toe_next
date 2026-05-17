@@ -10,10 +10,11 @@ import OnlineMatchmaking from '../../components/OnlineMatchmaking';
 import OnlineLobby from '../../components/OnlineLobby';
 import OnlineQueue from '../../components/OnlineQueue';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
-import { useSettings } from '../../context/SettingsContext';
+import { useGameSounds } from '../../hooks/useGameSounds';
+import { useTranslation } from '../../context/SettingsContext';
 import { getWinLine } from '../../domain/gameEngine';
-import { playWin, playLose, playDraw, playEnterQueue, playMatchFound, playRestartVote, playDisconnect, playMove, playExitWarning } from '../../utils/sounds';
-import { GameResult, Player, BoardState } from '../../domain/types';
+import { playEnterQueue, playMatchFound, playRestartVote, playDisconnect, playExitWarning } from '../../utils/sounds';
+import { Player } from '../../domain/types';
 
 const ROOM_TTL = 30 * 60;
 
@@ -27,18 +28,12 @@ const OnlinePage = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
   const game = useOnlineGame(nicknameSet ? nickname : undefined);
-  const { t } = useSettings();
-  const prevWinnerRef = useRef<GameResult>(null);
+  const { t } = useTranslation();
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
-  const prevSquaresRef = useRef<BoardState>(game.squares);
   const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
 
-  useEffect(() => {
-    const newPlacements = game.squares.some((cell, i) => cell && !prevSquaresRef.current[i]);
-    if (newPlacements) playMove();
-    prevSquaresRef.current = game.squares;
-  }, [game.squares]);
+  useGameSounds({ squares: game.squares, winner: game.winner, playerRole: game.yourRole ?? undefined });
 
   useEffect(() => {
     if (game.createdAt) {
@@ -65,14 +60,6 @@ const OnlinePage = () => {
     }
     prevPhaseRef.current = game.phase;
   }, [game.phase]);
-
-  useEffect(() => {
-    if (game.winner && game.winner !== prevWinnerRef.current) {
-      if (game.winner === 'BOTH') playDraw();
-      else game.winner === game.yourRole ? playWin() : playLose();
-    }
-    prevWinnerRef.current = game.winner;
-  }, [game.winner, game.yourRole]);
 
   useEffect(() => {
     if (game.restartRequestedBy && game.restartRequestedBy !== prevRestartRef.current) {

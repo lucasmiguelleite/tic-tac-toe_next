@@ -2,6 +2,7 @@
 
 import { Player } from '@/domain/types';
 import { useSettings } from '@/context/SettingsContext';
+import { boardStyleConfigs } from '@/domain/boardStyles';
 
 const Square = ({
   value,
@@ -17,25 +18,16 @@ const Square = ({
   isLosing?: boolean;
 }) => {
   const { boardStyle } = useSettings();
+  const config = boardStyleConfigs[boardStyle];
 
-  const stampClass = boardStyle === 'paper' ? 'stamp-paper'
-    : boardStyle === 'neon' ? 'stamp-neon'
-    : boardStyle === 'chalk' ? 'stamp-chalk'
-    : 'square-stamp';
-
-  const winClass = isWinning
-    ? (boardStyle === 'neon' ? 'square-win-neon'
-      : boardStyle === 'chalk' ? 'square-win-chalk'
-      : boardStyle === 'paper' ? 'square-win-paper'
-      : 'square-win')
-    : '';
+  const winClass = isWinning ? config.winClass : '';
   const loseClass = isLosing ? 'square-lose' : '';
   const effectClass = `${winClass} ${loseClass}`.trim();
 
-  if (boardStyle === 'paper') return <PaperSquare value={value} onClick={onClick} disabled={disabled} stampClass={stampClass} effectClass={effectClass} />;
-  if (boardStyle === 'neon') return <NeonSquare value={value} onClick={onClick} disabled={disabled} stampClass={stampClass} effectClass={effectClass} />;
-  if (boardStyle === 'chalk') return <ChalkSquare value={value} onClick={onClick} disabled={disabled} stampClass={stampClass} effectClass={effectClass} />;
-  return <ClassicSquare value={value} onClick={onClick} disabled={disabled} stampClass={stampClass} effectClass={effectClass} />;
+  if (boardStyle === 'paper') return <PaperSquare value={value} onClick={onClick} disabled={disabled} stampClass={config.stampClass} effectClass={effectClass} />;
+  if (boardStyle === 'neon') return <NeonSquare value={value} onClick={onClick} disabled={disabled} stampClass={config.stampClass} effectClass={effectClass} />;
+  if (boardStyle === 'chalk') return <ChalkSquare value={value} onClick={onClick} disabled={disabled} stampClass={config.stampClass} effectClass={effectClass} />;
+  return <ClassicSquare value={value} onClick={onClick} disabled={disabled} stampClass={config.stampClass} effectClass={effectClass} />;
 };
 
 export default Square;

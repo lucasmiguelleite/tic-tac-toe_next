@@ -1,9 +1,9 @@
 'use client';
 
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const Footer = () => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   return (
     <div className="relative bottom-0 mt-12 mb-2 w-full flex flex-row justify-center self-end text-sm text-gray-500 dark:text-gray-400">
       <p>

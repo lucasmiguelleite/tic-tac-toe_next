@@ -7,15 +7,15 @@ const getContext = (() => {
   };
 })();
 
+type SoundSettings = { volume: number; movesEnabled: boolean; eventsEnabled: boolean; uiEnabled: boolean };
 type SoundCategory = 'moves' | 'events' | 'ui';
 
-const getSettings = () => {
-  try {
-    const stored = localStorage.getItem('soundSettings');
-    if (stored) return JSON.parse(stored);
-  } catch {}
-  return { volume: 80, movesEnabled: true, eventsEnabled: true, uiEnabled: true };
-};
+const defaultSettings: SoundSettings = { volume: 80, movesEnabled: true, eventsEnabled: true, uiEnabled: true };
+let cache: SoundSettings = { ...defaultSettings };
+
+export const updateSoundCache = (settings: SoundSettings) => { cache = settings; };
+
+const getSettings = () => cache;
 
 const isEnabled = (category: SoundCategory) => {
   const s = getSettings();

@@ -1,12 +1,12 @@
 'use client';
 
 import { Player } from '@/domain/types';
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const players: Player[] = ['X', 'O'];
 
 const PlayerSelect = ({ onSelect }: { onSelect: (p: Player) => void }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   return (
     <div className="relative">
       <div className="static grid grid-cols-1 mx-10 h-max md:mt-52">

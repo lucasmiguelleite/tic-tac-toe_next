@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { Player } from '@/domain/types';
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const OnlineGameActions = ({
   onExit,
@@ -17,7 +17,7 @@ const OnlineGameActions = ({
   restartRequestedBy: Player | null;
   yourRole: Player | null;
 }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   const [confirmExit, setConfirmExit] = useState(false);
 
   if (confirmExit) {

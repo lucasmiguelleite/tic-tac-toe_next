@@ -1,12 +1,12 @@
 'use client';
 
 import { Difficulty } from '@/domain/types';
-import { useSettings } from '@/context/SettingsContext';
+import { useTranslation } from '@/context/SettingsContext';
 
 const difficulties: Difficulty[] = ['easy', 'medium', 'hard'];
 
 const DifficultySelect = ({ onSelect }: { onSelect: (d: Difficulty) => void }) => {
-  const { t } = useSettings();
+  const { t } = useTranslation();
   return (
     <div className="relative">
       <div className="static grid grid-cols-1 mx-10 h-max md:mt-52">
