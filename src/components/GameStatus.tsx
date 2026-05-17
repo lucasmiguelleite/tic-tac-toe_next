@@ -50,7 +50,7 @@ const GameStatusInner = ({
   };
 
   return (
-    <div className="flex justify-center text-center my-10 mx-10">
+    <div className="flex justify-center text-center my-10 mx-4 sm:mx-10 max-w-full overflow-hidden">
       {!winner && (
         <p className="font-bold text-2xl sm:text-4xl text-center max-w-full break-all">
           {yourRole
@@ -61,7 +61,7 @@ const GameStatusInner = ({
         </p>
       )}
       {winner && winner !== 'BOTH' && (
-        <p className="font-bold text-4xl">
+        <p className="font-bold text-4xl max-w-full">
           {yourRole
             ? winner === yourRole
               ? t('status.youWin')
