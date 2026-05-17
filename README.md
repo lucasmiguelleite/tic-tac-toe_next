@@ -117,17 +117,17 @@ Sincronização baseada em polling (adequado para serverless/Vercel):
 
 ```bash
 # Instalar dependências
-npm install
+bun install
 
 # Desenvolvimento
-npm run dev
+bun run dev
 # → http://localhost:9000
 
 # Testes
-npm test
+bun run test
 
 # Build de produção
-npm run build
+bun run build
 ```
 
 ## Testes
@@ -135,15 +135,15 @@ npm run build
 165 testes cobrindo domain, hooks, context, utils e integração de API:
 
 ```bash
-npm test           # roda todos os testes
-npm run test:watch # modo watch
+bun run test           # roda todos os testes
+bun run test:watch     # modo watch
 ```
 
 Os testes rodam automaticamente antes do build (`prebuild` script), garantindo que nenhum deploy chegue à produção com testes quebrados.
 
 ## Deploy
 
-O deploy é feito na [Vercel](https://vercel.com) com build automático. O `prebuild` garante que os testes passem antes de qualquer deploy.
+O deploy é feito na [Vercel](https://vercel.com) com build automático via Bun (detectado pelo campo `packageManager` no `package.json`). O `prebuild` garante que os testes passem antes de qualquer deploy.
 
 ## Licença
 

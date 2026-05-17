@@ -146,11 +146,11 @@ src/
 ## Comandos
 
 ```bash
-npm run dev          # next dev -p 9000
-npm run build        # prebuild (testes) + next build
-npm test             # vitest run
-npm run test:watch   # vitest watch
-npm run lint         # next lint
+bun run dev          # next dev -p 9000
+bun run build        # prebuild (testes) + next build
+bun run test         # vitest run
+bun run test:watch   # vitest watch
+bun run lint         # next lint
 ```
 
 ## Regras para alterações
