@@ -107,3 +107,17 @@ body {
 .square-stamp {
   animation: stamp 0.25s ease-out;
 }
+
+/* Draw V strike */
+@keyframes strike-draw-anim {
+  0% { stroke-dashoffset: 4; opacity: 0; }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.strike-draw {
+  stroke: #6b7280;
+  stroke-dasharray: 4;
+  filter: drop-shadow(0 0 3px rgba(107, 114, 128, 0.5));
+  animation: strike-draw-anim 0.5s ease-out forwards;
+}

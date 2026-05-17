@@ -1,6 +1,7 @@
 'use client';
 
 import { BoardState, GameResult, Player } from '@/domain/types';
+import { useSettings } from '@/context/SettingsContext';
 import Square from './Square';
 
 const cellCenter = (index: number) => {
@@ -38,6 +39,7 @@ const Board = ({
   winnerPlayer?: Player | null;
   yourRole?: Player;
 }) => {
+  const { locale } = useSettings();
   const isOnlineWin = yourRole !== undefined;
   const isYourWin = isOnlineWin && winnerPlayer === yourRole;
   const loser = winnerPlayer === 'X' ? 'O' : winnerPlayer === 'O' ? 'X' : null;
@@ -81,6 +83,16 @@ const Board = ({
               strokeWidth={0.09}
               strokeLinecap="round"
             />
+          </svg>
+        )}
+        {winner === 'BOTH' && locale === 'pt' && (
+          <svg
+            className="absolute -inset-[15%] w-[130%] h-[130%] pointer-events-none z-10"
+            viewBox="-0.3 -0.3 3.6 3.6"
+            preserveAspectRatio="none"
+          >
+            <line x1="-0.2" y1="0.2" x2="1.5" y2="2.8" className="strike-draw" strokeWidth={0.08} strokeLinecap="round" />
+            <line x1="3.2" y1="0.2" x2="1.5" y2="2.8" className="strike-draw" strokeWidth={0.08} strokeLinecap="round" />
           </svg>
         )}
       </div>
