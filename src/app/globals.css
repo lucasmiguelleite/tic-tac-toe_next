@@ -37,3 +37,61 @@ body {
 .square{
   width: 100px;
 }
+
+/* Win line strike (SVG) */
+@keyframes strike-draw {
+  0% { stroke-dashoffset: 4; opacity: 0; }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes strike-impact {
+  0% { stroke-dashoffset: 4; opacity: 0; }
+  10% { opacity: 1; }
+  40% { stroke-dashoffset: 0; }
+  55% { stroke-dashoffset: -0.15; }
+  70% { stroke-dashoffset: 0.05; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+.strike-win {
+  stroke: #facc15;
+  stroke-dasharray: 4;
+  filter: drop-shadow(0 0 3px rgba(250, 204, 21, 0.7));
+  animation: strike-draw 0.4s ease-out forwards;
+}
+
+.strike-lose {
+  stroke: #dc2626;
+  stroke-dasharray: 4;
+  filter: drop-shadow(0 0 3px rgba(220, 38, 38, 0.6));
+  animation: strike-impact 0.5s ease-out forwards;
+}
+
+/* Square glow for winner */
+@keyframes glow-win {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(250, 204, 21, 0.4); }
+  50% { box-shadow: 0 0 18px 6px rgba(250, 204, 21, 0.7); }
+}
+
+.square-win {
+  animation: glow-win 1s ease-in-out infinite;
+  z-index: 5;
+  position: relative;
+}
+
+/* Square shake for loser */
+@keyframes shake-lose {
+  0%, 100% { transform: translateX(0); }
+  10% { transform: translateX(-4px); }
+  20% { transform: translateX(4px); }
+  30% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  50% { transform: translateX(-2px); }
+  60% { transform: translateX(2px); }
+}
+
+.square-lose {
+  animation: shake-lose 0.5s ease-out;
+  opacity: 0.6;
+}
