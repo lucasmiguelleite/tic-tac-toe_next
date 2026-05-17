@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Player } from '@/domain/types';
 import { useSettings } from '@/context/SettingsContext';
+import { playExitWarning } from '@/utils/sounds';
 
 const OnlineGameActions = ({
   onExit,
@@ -27,7 +28,7 @@ const OnlineGameActions = ({
         <div className="flex gap-3">
           <button
             className="w-36 h-10 bg-red-500 hover:bg-red-600 text-white rounded-md font-bold text-lg cursor-pointer"
-            onClick={onExit}
+            onClick={() => { playExitWarning(); onExit(); }}
           >
             {t('online.yesLeave')}
           </button>
@@ -68,7 +69,7 @@ const OnlineGameActions = ({
       )}
       <button
         className="border-0 border-black w-40 mt-3 mx-2 text-2xl bg-red-400 hover:bg-red-500 text-white rounded-md p-1 cursor-pointer"
-        onClick={() => setConfirmExit(true)}
+        onClick={() => { playExitWarning(); setConfirmExit(true); }}
       >
         {t('online.cancel')}
       </button>
