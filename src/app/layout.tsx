@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import { SettingsProvider } from "@/context/SettingsContext";
 import SettingsBar from "@/components/SettingsBar";
 import Footer from "@/components/Footer";
+import ClickSoundProvider from "@/components/ClickSoundProvider";
 
 export const metadata: Metadata = {
   title: "Tic Tac Toe",
@@ -20,6 +21,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen flex flex-col">
         <SettingsProvider>
+          <ClickSoundProvider />
           <SettingsBar />
           <main className="flex-1">{children}</main>
           <Footer />

@@ -49,3 +49,12 @@ export const playRestartVote = () => {
   playTone(587.33, 0, 0.12, 'sine', 0.12);
   playTone(783.99, 0.1, 0.15, 'sine', 0.12);
 };
+
+export const playClick = () => {
+  playTone(660, 0, 0.06, 'sine', 0.08);
+};
+
+export const playExitWarning = () => {
+  playTone(330, 0, 0.15, 'sawtooth', 0.08);
+  playTone(330, 0.2, 0.15, 'sawtooth', 0.08);
+};
