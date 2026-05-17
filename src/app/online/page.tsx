@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { redirect } from 'next/navigation';
 import Home from '../../components/Home';
 import GameStatus from '../../components/GameStatus';
@@ -11,12 +11,42 @@ import OnlineLobby from '../../components/OnlineLobby';
 import OnlineQueue from '../../components/OnlineQueue';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
 import { useSettings } from '../../context/SettingsContext';
+import { getWinLine } from '../../domain/gameEngine';
+import { playWin, playLose, playEnterQueue, playMatchFound, playRestartVote } from '../../utils/sounds';
+import { GameResult, Player } from '../../domain/types';
 
 const OnlinePage = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
   const game = useOnlineGame(nicknameSet ? nickname : undefined);
   const { t } = useSettings();
+  const prevWinnerRef = useRef<GameResult>(null);
+  const prevPhaseRef = useRef(game.phase);
+  const prevRestartRef = useRef<Player | null>(null);
+
+  useEffect(() => {
+    if (game.phase === 'in-queue' && prevPhaseRef.current !== 'in-queue') {
+      playEnterQueue();
+    }
+    if (game.phase === 'matched' && prevPhaseRef.current !== 'matched') {
+      playMatchFound();
+    }
+    prevPhaseRef.current = game.phase;
+  }, [game.phase]);
+
+  useEffect(() => {
+    if (game.winner && game.winner !== 'BOTH' && game.winner !== prevWinnerRef.current) {
+      game.winner === game.yourRole ? playWin() : playLose();
+    }
+    prevWinnerRef.current = game.winner;
+  }, [game.winner, game.yourRole]);
+
+  useEffect(() => {
+    if (game.restartRequestedBy && game.restartRequestedBy !== prevRestartRef.current) {
+      playRestartVote();
+    }
+    prevRestartRef.current = game.restartRequestedBy;
+  }, [game.restartRequestedBy]);
 
   if (!nicknameSet) {
     return (
@@ -101,6 +131,9 @@ const OnlinePage = () => {
             onSquareClick={game.makeMove}
             winner={game.winner}
             isYourTurn={game.yourRole === game.currentPlayer}
+            winLine={getWinLine(game.squares)}
+            winnerPlayer={game.winner as 'X' | 'O' | null}
+            yourRole={game.yourRole ?? undefined}
           />
           <OnlineGameActions
             onExit={() => { game.exit(); redirect('/'); }}

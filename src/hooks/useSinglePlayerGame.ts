@@ -67,6 +67,7 @@ export const useSinglePlayerGame = () => {
     squares,
     currentPlayer,
     winner,
+    player,
     makeMove,
     restart,
     difficultySelected,
