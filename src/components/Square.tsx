@@ -1,8 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { Player } from '@/domain/types';
-import { playMove } from '@/utils/sounds';
 
 const Square = ({
   value,
@@ -17,13 +15,6 @@ const Square = ({
   isWinning?: boolean;
   isLosing?: boolean;
 }) => {
-  const prevValue = useRef(value);
-
-  useEffect(() => {
-    if (value && !prevValue.current) playMove();
-    prevValue.current = value;
-  }, [value]);
-
   const effectClass = isWinning ? 'square-win' : isLosing ? 'square-lose' : '';
 
   if (!value) {

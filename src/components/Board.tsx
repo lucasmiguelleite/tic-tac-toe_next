@@ -22,7 +22,25 @@ const extend = (start: { x: number; y: number }, end: { x: number; y: number }, 
   };
 };
 
-const Board = ({
+type LocalBoardProps = {
+  squares: BoardState;
+  onSquareClick: (index: number) => void;
+  winner: GameResult;
+  winLine?: number[] | null;
+  winnerPlayer?: Player | null;
+};
+
+type OnlineBoardProps = {
+  squares: BoardState;
+  onSquareClick: (index: number) => void;
+  winner: GameResult;
+  isYourTurn: boolean;
+  winLine?: number[] | null;
+  winnerPlayer: Player | null;
+  yourRole: Player;
+};
+
+const BoardInner = ({
   squares,
   onSquareClick,
   winner,
@@ -30,15 +48,7 @@ const Board = ({
   winLine = null,
   winnerPlayer = null,
   yourRole,
-}: {
-  squares: BoardState;
-  onSquareClick: (index: number) => void;
-  winner: GameResult;
-  isYourTurn?: boolean;
-  winLine?: number[] | null;
-  winnerPlayer?: Player | null;
-  yourRole?: Player;
-}) => {
+}: LocalBoardProps & { isYourTurn?: boolean; yourRole?: Player }) => {
   const { locale } = useSettings();
   const isOnlineWin = yourRole !== undefined;
   const isYourWin = isOnlineWin && winnerPlayer === yourRole;
@@ -100,4 +110,5 @@ const Board = ({
   );
 };
 
-export default Board;
+export const LocalBoard = (props: LocalBoardProps) => <BoardInner {...props} />;
+export const OnlineBoard = (props: OnlineBoardProps) => <BoardInner {...props} />;

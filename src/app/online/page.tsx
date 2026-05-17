@@ -12,8 +12,8 @@ import OnlineQueue from '../../components/OnlineQueue';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
 import { useSettings } from '../../context/SettingsContext';
 import { getWinLine } from '../../domain/gameEngine';
-import { playWin, playLose, playDraw, playEnterQueue, playMatchFound, playRestartVote, playDisconnect } from '../../utils/sounds';
-import { GameResult, Player } from '../../domain/types';
+import { playWin, playLose, playDraw, playEnterQueue, playMatchFound, playRestartVote, playDisconnect, playMove, playExitWarning } from '../../utils/sounds';
+import { GameResult, Player, BoardState } from '../../domain/types';
 
 const ROOM_TTL = 30 * 60;
 
@@ -31,7 +31,14 @@ const OnlinePage = () => {
   const prevWinnerRef = useRef<GameResult>(null);
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
+  const prevSquaresRef = useRef<BoardState>(game.squares);
   const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    const newPlacements = game.squares.some((cell, i) => cell && !prevSquaresRef.current[i]);
+    if (newPlacements) playMove();
+    prevSquaresRef.current = game.squares;
+  }, [game.squares]);
 
   useEffect(() => {
     if (game.createdAt) {
@@ -152,7 +159,7 @@ const OnlinePage = () => {
           <GameStatus
             winner={game.winner}
             currentPlayer={game.currentPlayer}
-            yourRole={game.yourRole ?? undefined}
+            yourRole={game.yourRole!}
             opponentConnected={game.opponentConnected}
             opponentNickname={game.opponentNickname}
             yourNickname={game.yourNickname}
@@ -165,10 +172,10 @@ const OnlinePage = () => {
             isYourTurn={game.yourRole === game.currentPlayer}
             winLine={getWinLine(game.squares)}
             winnerPlayer={game.winner as 'X' | 'O' | null}
-            yourRole={game.yourRole ?? undefined}
+            yourRole={game.yourRole!}
           />
           <OnlineGameActions
-            onExit={() => { game.exit(); redirect('/'); }}
+            onExit={() => { playExitWarning(); game.exit(); redirect('/'); }}
             showPlayAgain={Boolean(game.winner)}
             onPlayAgain={game.restart}
             restartRequestedBy={game.restartRequestedBy}

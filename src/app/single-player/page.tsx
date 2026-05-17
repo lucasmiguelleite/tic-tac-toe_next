@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import Home from "../../components/Home";
 import DifficultySelect from "../../components/DifficultySelect";
 import PlayerSelect from "../../components/PlayerSelect";
-import GameStatus from "../../components/GameStatus";
-import Board from "../../components/Board";
+import { LocalGameStatus as GameStatus } from "../../components/GameStatus";
+import { LocalBoard as Board } from "../../components/Board";
 import GameActions from "../../components/GameActions";
 import { useSinglePlayerGame } from "../../hooks/useSinglePlayerGame";
 import { getWinLine } from "../../domain/gameEngine";
-import { playWin, playLose, playDraw } from "../../utils/sounds";
-import { GameResult } from "../../domain/types";
+import { playWin, playLose, playDraw, playMove, playExitWarning } from "../../utils/sounds";
+import { GameResult, BoardState } from "../../domain/types";
 
 const SinglePlayerPage = () => {
   const {
@@ -27,6 +27,7 @@ const SinglePlayerPage = () => {
     selectPlayer,
   } = useSinglePlayerGame();
   const prevWinnerRef = useRef<GameResult>(null);
+  const prevSquaresRef = useRef<BoardState>(squares);
 
   useEffect(() => {
     if (winner && winner !== prevWinnerRef.current) {
@@ -35,6 +36,12 @@ const SinglePlayerPage = () => {
     }
     prevWinnerRef.current = winner;
   }, [winner, player]);
+
+  useEffect(() => {
+    const newPlacements = squares.some((cell, i) => cell && !prevSquaresRef.current[i]);
+    if (newPlacements) playMove();
+    prevSquaresRef.current = squares;
+  }, [squares]);
 
   return (
     <div>
@@ -47,7 +54,7 @@ const SinglePlayerPage = () => {
         <div className="flex flex-col">
           <GameStatus winner={winner} currentPlayer={currentPlayer} />
           <Board squares={squares} onSquareClick={makeMove} winner={winner} winLine={getWinLine(squares)} winnerPlayer={winner as 'X' | 'O' | null} />
-          <GameActions onRestart={restart} onExit={() => redirect("/")} />
+          <GameActions onRestart={restart} onExit={() => { playExitWarning(); redirect("/"); }} />
         </div>
       )}
     </div>

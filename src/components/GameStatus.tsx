@@ -3,7 +3,20 @@
 import { GameResult, Player } from '@/domain/types';
 import { useSettings } from '@/context/SettingsContext';
 
-const GameStatus = ({
+type LocalGameStatusProps = {
+  winner: GameResult;
+  currentPlayer: Player;
+};
+
+type OnlineGameStatusProps = LocalGameStatusProps & {
+  yourRole: Player;
+  opponentConnected: boolean;
+  opponentNickname: string;
+  yourNickname: string;
+  waitingForOpponentRestart: boolean;
+};
+
+const GameStatusInner = ({
   winner,
   currentPlayer,
   yourRole,
@@ -11,15 +24,7 @@ const GameStatus = ({
   opponentNickname,
   yourNickname,
   waitingForOpponentRestart,
-}: {
-  winner: GameResult;
-  currentPlayer: Player;
-  yourRole?: Player;
-  opponentConnected?: boolean;
-  opponentNickname?: string;
-  yourNickname?: string;
-  waitingForOpponentRestart?: boolean;
-}) => {
+}: LocalGameStatusProps & { yourRole?: Player; opponentConnected?: boolean; opponentNickname?: string; yourNickname?: string; waitingForOpponentRestart?: boolean }) => {
   const { t } = useSettings();
 
   if (waitingForOpponentRestart) {
@@ -69,4 +74,5 @@ const GameStatus = ({
   );
 };
 
-export default GameStatus;
+export const LocalGameStatus = (props: LocalGameStatusProps) => <GameStatusInner {...props} />;
+export const OnlineGameStatus = (props: OnlineGameStatusProps) => <GameStatusInner {...props} />;
