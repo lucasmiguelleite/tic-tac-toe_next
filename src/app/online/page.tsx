@@ -15,6 +15,14 @@ import { getWinLine } from '../../domain/gameEngine';
 import { playWin, playLose, playDraw, playEnterQueue, playMatchFound, playRestartVote, playDisconnect } from '../../utils/sounds';
 import { GameResult, Player } from '../../domain/types';
 
+const ROOM_TTL = 30 * 60;
+
+const formatCountdown = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
+
 const OnlinePage = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
@@ -23,6 +31,19 @@ const OnlinePage = () => {
   const prevWinnerRef = useRef<GameResult>(null);
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
+  const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
+
+  useEffect(() => {
+    if ((game.phase === 'playing' || game.phase === 'opponent-disconnected') && roomRemaining === null) {
+      setRoomRemaining(ROOM_TTL);
+    }
+  }, [game.phase, roomRemaining]);
+
+  useEffect(() => {
+    if (roomRemaining === null || roomRemaining <= 0) return;
+    const id = setInterval(() => setRoomRemaining((r) => Math.max((r ?? 0) - 1, 0)), 1000);
+    return () => clearInterval(id);
+  }, [roomRemaining]);
 
   useEffect(() => {
     if (game.phase === 'in-queue' && prevPhaseRef.current !== 'in-queue') {
@@ -122,6 +143,11 @@ const OnlinePage = () => {
       )}
       {(game.phase === 'playing' || game.phase === 'opponent-disconnected') && (
         <div className="flex flex-col">
+          {roomRemaining !== null && (
+            <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-1">
+              {t('online.roomExpires')} {formatCountdown(roomRemaining)}
+            </p>
+          )}
           <GameStatus
             winner={game.winner}
             currentPlayer={game.currentPlayer}
