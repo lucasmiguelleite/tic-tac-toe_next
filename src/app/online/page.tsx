@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { redirect } from 'next/navigation';
 import Home from '../../components/Home';
-import GameStatus from '../../components/GameStatus';
-import Board from '../../components/Board';
+import { OnlineGameStatus as GameStatus } from '../../components/GameStatus';
+import { OnlineBoard as Board } from '../../components/Board';
 import OnlineGameActions from '../../components/OnlineGameActions';
 import OnlineMatchmaking from '../../components/OnlineMatchmaking';
 import OnlineLobby from '../../components/OnlineLobby';
