@@ -95,8 +95,12 @@ export const useOnlineGame = (nickname?: string) => {
       setPhase('playing');
       // Fetch full state immediately so nicknames are available
       setTimeout(async () => {
-        const stateRes = await fetch(`/api/online/room/state?roomId=${rid}&playerId=${data.playerId}`);
-        if (stateRes.ok) room.applyState(await stateRes.json());
+        try {
+          const stateRes = await fetch(`/api/online/room/state?roomId=${rid}&playerId=${data.playerId}`);
+          if (stateRes.ok) room.applyState(await stateRes.json());
+        } catch {
+          // The regular game-state poll will retry.
+        }
       }, 0);
     } catch {
       setError('Failed to join room');

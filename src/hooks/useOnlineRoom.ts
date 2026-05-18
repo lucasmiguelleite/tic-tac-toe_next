@@ -3,6 +3,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import { BoardState, GameResult, Player } from '@/domain/types';
 
+const ACTIVE_TURN_POLL_MS = 1000;
+const WAITING_TURN_POLL_MS = 2000;
+const BACKGROUND_POLL_MS = 5000;
+
 export const useOnlineRoom = (roomId: string | null, playerId: string | null) => {
   const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
   const [currentPlayer, setCurrentPlayer] = useState<Player>('X');
@@ -39,23 +43,54 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   const pollGameState = useCallback((onDisconnect: () => void, onExpired: () => void) => {
     if (!roomId || !playerId) return () => {};
     let active = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleNext = (delay: number) => {
+      if (!active) return;
+      timeoutId = setTimeout(tick, delay);
+    };
+
+    const nextPollDelay = (data?: Record<string, unknown>) => {
+      if (typeof document !== 'undefined' && document.hidden) return BACKGROUND_POLL_MS;
+      if (!data) return WAITING_TURN_POLL_MS;
+
+      const role = data.yourRole as Player | null;
+      const nextPlayer = data.currentPlayer as Player | null;
+      return role && nextPlayer && role === nextPlayer ? ACTIVE_TURN_POLL_MS : WAITING_TURN_POLL_MS;
+    };
+
     const tick = async () => {
       if (!active) return;
       try {
         const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
-        if (res.status === 404) { onExpired(); return; }
+        if (!active) return;
+        if (res.status === 404) {
+          active = false;
+          onExpired();
+          return;
+        }
         if (res.ok) {
           const data = await res.json();
+          if (!active) return;
           applyState(data);
-          if (!data.opponentConnected && data.roomStatus === 'playing') onDisconnect();
+          if (!data.opponentConnected && data.roomStatus === 'playing') {
+            active = false;
+            onDisconnect();
+            return;
+          }
+          scheduleNext(nextPollDelay(data));
+          return;
         }
       } catch {
         // Retry
       }
+      scheduleNext(nextPollDelay());
     };
     tick();
-    const id = setInterval(tick, 1000);
-    return () => { active = false; clearInterval(id); };
+    return () => {
+      active = false;
+      if (timeoutId) clearTimeout(timeoutId);
+    };
   }, [roomId, playerId, applyState]);
 
   const pollLobby = useCallback((onOpponentJoined: (data: Record<string, unknown>) => void) => {

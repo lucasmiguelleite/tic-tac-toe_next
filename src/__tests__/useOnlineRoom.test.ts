@@ -156,6 +156,59 @@ describe('useOnlineRoom', () => {
     cleanup();
   });
 
+  it('pollGameState uses 1s polling when it is your turn', async () => {
+    const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        board: Array(9).fill(null),
+        currentPlayer: 'X',
+        winner: null,
+        opponentConnected: true,
+        roomStatus: 'playing',
+        yourRole: 'X',
+      }),
+    } as Response);
+    const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
+    let cleanup: () => void = () => {};
+    act(() => { cleanup = result.current.pollGameState(vi.fn(), vi.fn()); });
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    cleanup();
+  });
+
+  it('pollGameState backs off to 2s polling when waiting for opponent', async () => {
+    const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        board: Array(9).fill(null),
+        currentPlayer: 'O',
+        winner: null,
+        opponentConnected: true,
+        roomStatus: 'playing',
+        yourRole: 'X',
+      }),
+    } as Response);
+    const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
+    let cleanup: () => void = () => {};
+    act(() => { cleanup = result.current.pollGameState(vi.fn(), vi.fn()); });
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+    await act(async () => { await vi.advanceTimersByTimeAsync(1000); });
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    cleanup();
+  });
+
   it('pollLobby calls onOpponentJoined when roomStatus is playing', async () => {
     const onJoined = vi.fn();
     mockFetch({ roomStatus: 'playing', yourNickname: 'Alice' });
