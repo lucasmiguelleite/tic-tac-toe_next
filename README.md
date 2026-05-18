@@ -115,7 +115,7 @@ Sincronização baseada em polling (adequado para serverless/Vercel):
 - **Votação de restart** — ambos os jogadores devem confirmar para reiniciar
 - Transição matched→playing aguarda carregamento do estado + delay mínimo de UX
 
-Em produção, configure as variáveis `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`. Sem elas, o app usa fallback em memória para desenvolvimento local e testes.
+Em produção, configure `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (ou os aliases da integração Vercel KV: `KV_REST_API_URL` e `KV_REST_API_TOKEN`). Sem elas, o app usa fallback em memória para desenvolvimento local e testes.
 
 ## Começando
 

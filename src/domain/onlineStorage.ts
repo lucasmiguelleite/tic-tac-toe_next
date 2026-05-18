@@ -7,8 +7,10 @@ type MemoryEntry = {
 
 const memoryStore = new Map<string, MemoryEntry>();
 
-const hasRedisEnv = Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
-const redis = hasRedisEnv ? Redis.fromEnv() : null;
+const redisRestUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
+const redisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
+const hasRedisEnv = Boolean(redisRestUrl && redisRestToken);
+const redis = hasRedisEnv ? new Redis({ url: redisRestUrl, token: redisRestToken }) : null;
 
 const isExpired = (entry: MemoryEntry, now = Date.now()) => (
   entry.expiresAt !== null && entry.expiresAt <= now
