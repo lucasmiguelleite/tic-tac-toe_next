@@ -5,7 +5,7 @@
   "packageManager": "bun@1.3.11",
   "scripts": {
     "dev": "next dev -p 9000",
-    "prebuild": "vitest run",
+    "prebuild": "npx vitest run",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
