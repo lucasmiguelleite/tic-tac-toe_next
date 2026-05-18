@@ -94,6 +94,18 @@ describe('enterQueue', () => {
     const third = await enterQueue();
     expect(third.matched).toBe(false);
   });
+
+  it('eventually matches players that enter at the same time', async () => {
+    const [first, second] = await Promise.all([enterQueue('Alice'), enterQueue('Bob')]);
+
+    const firstPoll = await pollQueue(first.queueId);
+    const secondPoll = await pollQueue(second.queueId);
+
+    expect(firstPoll?.matched).toBe(true);
+    expect(secondPoll?.matched).toBe(true);
+    expect(firstPoll?.matchResult?.roomId).toBe(secondPoll?.matchResult?.roomId);
+    expect(firstPoll?.matchResult?.playerRole).not.toBe(secondPoll?.matchResult?.playerRole);
+  });
 });
 
 describe('exitQueue', () => {
