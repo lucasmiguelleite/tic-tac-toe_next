@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cleanup, pollQueue } from '@/domain/onlineStore';
+import { pollQueue } from '@/domain/onlineStore';
 
 export async function GET(request: Request) {
-  await cleanup();
   const { searchParams } = new URL(request.url);
   const queueId = searchParams.get('queueId');
 

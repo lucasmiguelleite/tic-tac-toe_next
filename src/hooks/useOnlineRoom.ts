@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { BoardState, GameResult, Player } from '@/domain/types';
 
 const ACTIVE_TURN_POLL_MS = 1000;
 const WAITING_TURN_POLL_MS = 2000;
 const BACKGROUND_POLL_MS = 5000;
+const DISCONNECT_GRACE_CHECKS = 3;
 
 export const useOnlineRoom = (roomId: string | null, playerId: string | null) => {
   const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
@@ -18,8 +19,27 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   const [restartRequestedBy, setRestartRequestedBy] = useState<Player | null>(null);
   const [createdAt, setCreatedAt] = useState<number | null>(null);
 
+  // Track pending optimistic move to prevent flickering
+  const pendingMoveRef = useRef<{ index: number; player: Player } | null>(null);
+
   const applyState = useCallback((data: Record<string, unknown>) => {
-    setSquares(data.board as BoardState);
+    const serverBoard = data.board as BoardState;
+    const pm = pendingMoveRef.current;
+
+    if (pm && serverBoard[pm.index] === pm.player) {
+      // Server confirmed the move — clear pending
+      pendingMoveRef.current = null;
+    }
+
+    setSquares(() => {
+      if (pm && serverBoard[pm.index] !== pm.player) {
+        // Server hasn't registered our move yet — preserve it on top of server state
+        const merged = [...serverBoard];
+        merged[pm.index] = pm.player;
+        return merged;
+      }
+      return serverBoard;
+    });
     setCurrentPlayer(data.currentPlayer as Player);
     setWinner(data.winner as GameResult);
     setOpponentConnected(data.opponentConnected as boolean);
@@ -44,6 +64,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     if (!roomId || !playerId) return () => {};
     let active = true;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let inFlight = false;
+    let disconnectCheckCount = 0;
 
     const scheduleNext = (delay: number) => {
       if (!active) return;
@@ -60,7 +82,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     };
 
     const tick = async () => {
-      if (!active) return;
+      if (!active || inFlight) return;
+      inFlight = true;
       try {
         const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
         if (!active) return;
@@ -74,15 +97,22 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
           if (!active) return;
           applyState(data);
           if (!data.opponentConnected && data.roomStatus === 'playing') {
-            active = false;
-            onDisconnect();
-            return;
+            disconnectCheckCount++;
+            if (disconnectCheckCount >= DISCONNECT_GRACE_CHECKS) {
+              active = false;
+              onDisconnect();
+              return;
+            }
+          } else {
+            disconnectCheckCount = 0;
           }
           scheduleNext(nextPollDelay(data));
           return;
         }
       } catch {
         // Retry
+      } finally {
+        inFlight = false;
       }
       scheduleNext(nextPollDelay());
     };
@@ -111,6 +141,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
 
   const makeMove = useCallback(async (index: number) => {
     if (yourRole !== currentPlayer || !roomId || !playerId) return;
+    // Optimistic update with pending tracking
+    pendingMoveRef.current = { index, player: currentPlayer };
     setSquares((prev) => prev.map((cell, i) => (i === index ? currentPlayer : cell)));
     try {
       const res = await fetch('/api/online/room/move', {
@@ -122,9 +154,12 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
         const data = await res.json();
         setCurrentPlayer(data.currentPlayer);
         setWinner(data.winner);
+        pendingMoveRef.current = null;
+      } else {
+        pendingMoveRef.current = null;
       }
     } catch {
-      // Next poll will correct state
+      pendingMoveRef.current = null;
     }
   }, [yourRole, currentPlayer, roomId, playerId]);
 
@@ -146,6 +181,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
           setCurrentPlayer('X');
           setWinner(null);
           setRestartRequestedBy(null);
+          pendingMoveRef.current = null;
           return true;
         }
       }
@@ -171,6 +207,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     setYourRole(null);
     setRestartRequestedBy(null);
     setCreatedAt(null);
+    pendingMoveRef.current = null;
   }, []);
 
   return {

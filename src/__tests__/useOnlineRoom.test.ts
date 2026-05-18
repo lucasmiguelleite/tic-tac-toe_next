@@ -126,20 +126,34 @@ describe('useOnlineRoom', () => {
     expect(result.current.opponentNickname).toBe('');
   });
 
-  it('pollGameState calls onDisconnect when opponent disconnects', async () => {
+  it('pollGameState calls onDisconnect after 3 consecutive opponentConnected false', async () => {
     const onDisconnect = vi.fn();
     const onExpired = vi.fn();
-    mockFetch({
-      board: Array(9).fill(null),
-      currentPlayer: 'X',
-      winner: null,
-      opponentConnected: false,
-      roomStatus: 'playing',
-    });
+    vi.spyOn(global, 'fetch').mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: () => Promise.resolve({
+        board: Array(9).fill(null),
+        currentPlayer: 'X',
+        winner: null,
+        opponentConnected: false,
+        roomStatus: 'playing',
+      }),
+    } as Response);
     const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
     let cleanup: () => void = () => {};
     act(() => { cleanup = result.current.pollGameState(onDisconnect, onExpired); });
+
+    // First check — grace period not reached
     await act(async () => { vi.advanceTimersByTimeAsync(100); });
+    expect(onDisconnect).not.toHaveBeenCalled();
+
+    // Second check
+    await act(async () => { vi.advanceTimersByTimeAsync(2000); });
+    expect(onDisconnect).not.toHaveBeenCalled();
+
+    // Third check — triggers disconnect
+    await act(async () => { vi.advanceTimersByTimeAsync(2000); });
     expect(onDisconnect).toHaveBeenCalled();
     cleanup();
   });
@@ -229,5 +243,64 @@ describe('useOnlineRoom', () => {
       result.current.applyState({ createdAt: 2000 });
     });
     expect(result.current.createdAt).toBe(1000);
+  });
+
+  it('preserves pending move while move API is in-flight', async () => {
+    let resolveMove: (v: unknown) => void;
+    const movePromise = new Promise((r) => { resolveMove = r; });
+    vi.spyOn(global, 'fetch').mockReturnValueOnce(movePromise as Promise<Response>);
+
+    const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
+    act(() => result.current.setInitialRoomState('X', 'Alice'));
+
+    // Start the move (don't await — simulates in-flight request)
+    let moveDone = false;
+    act(() => {
+      result.current.makeMove(4).then(() => { moveDone = true; });
+    });
+
+    // Optimistic update applied
+    expect(result.current.squares[4]).toBe('X');
+
+    // Poll returns old server state (move not registered yet)
+    act(() => {
+      result.current.applyState({
+        board: Array(9).fill(null),
+        currentPlayer: 'X',
+        winner: null,
+        opponentConnected: true,
+      });
+    });
+
+    // Pending move should still be preserved
+    expect(result.current.squares[4]).toBe('X');
+
+    // Now resolve the move API call
+    await act(async () => {
+      resolveMove!({ ok: true, json: () => Promise.resolve({ currentPlayer: 'O', winner: null }) });
+    });
+    expect(moveDone).toBe(true);
+  });
+
+  it('clears pending move when server confirms it via poll', async () => {
+    mockFetch({ currentPlayer: 'O', winner: null });
+    const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
+    act(() => result.current.setInitialRoomState('X', 'Alice'));
+    await act(async () => result.current.makeMove(4));
+    expect(result.current.squares[4]).toBe('X');
+
+    // Server poll returns state WITH the move registered
+    const boardWithMove = Array(9).fill(null) as (string | null)[];
+    boardWithMove[4] = 'X';
+    act(() => {
+      result.current.applyState({
+        board: boardWithMove,
+        currentPlayer: 'O',
+        winner: null,
+        opponentConnected: true,
+      });
+    });
+    expect(result.current.squares[4]).toBe('X');
+    expect(result.current.currentPlayer).toBe('O');
   });
 });

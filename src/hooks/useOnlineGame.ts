@@ -48,7 +48,7 @@ export const useOnlineGame = (nickname?: string) => {
   useEffect(() => {
     if (phase !== 'matched') return;
     let cancelled = false;
-    const minDelay = new Promise<void>((r) => setTimeout(r, 1500));
+    const minDelay = new Promise<void>((r) => setTimeout(r, 300));
     Promise.all([room.fetchState(), minDelay]).then(() => {
       if (!cancelled) setPhase('playing');
     });

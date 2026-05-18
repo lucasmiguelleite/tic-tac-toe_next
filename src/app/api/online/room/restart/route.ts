@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cleanup, getRoom, updateRoom } from '@/domain/onlineStore';
+import { getRoom, updateRoom } from '@/domain/onlineStore';
 import { BoardState } from '@/domain/types';
 
 export async function POST(request: Request) {
-  await cleanup();
   const { roomId, playerId } = await request.json();
 
   if (!roomId || !playerId) {

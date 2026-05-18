@@ -5,12 +5,12 @@ import { clearKeys, deleteValue, getKeys, getValue, setValue } from './onlineSto
 const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const ROOM_CODE_LENGTH = 6;
 export const ROOM_TTL_MS = 30 * 60 * 1000;
-const ROOM_TTL_SECONDS = ROOM_TTL_MS / 1000;
-const ROOM_KEY_PREFIX = 'tic-tac-toe:room:';
+export const ROOM_TTL_SECONDS = ROOM_TTL_MS / 1000;
+export const ROOM_KEY_PREFIX = 'tic-tac-toe:room:';
 
 export { generateId };
 
-const roomKey = (roomId: string) => `${ROOM_KEY_PREFIX}${roomId}`;
+export const roomKey = (roomId: string) => `${ROOM_KEY_PREFIX}${roomId}`;
 
 const generateCode = (): string => {
   let code = '';

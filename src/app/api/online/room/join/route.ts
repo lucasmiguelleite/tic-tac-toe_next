@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { cleanup, joinRoom } from '@/domain/onlineStore';
+import { joinRoom } from '@/domain/onlineStore';
 
 export async function POST(request: Request) {
-  await cleanup();
   const { roomId, nickname } = await request.json();
   if (!roomId || typeof roomId !== 'string') {
     return NextResponse.json({ error: 'roomId is required' }, { status: 400 });

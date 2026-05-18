@@ -1,7 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
 
 vi.mock('@/domain/onlineStore', () => ({
-  cleanup: vi.fn(),
   enterQueue: vi.fn(),
   pollQueue: vi.fn(),
   exitQueue: vi.fn(),

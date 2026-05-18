@@ -1,9 +1,8 @@
 import { NextResponse } from 'next/server';
-import { cleanup, getRoom, updateRoom } from '@/domain/onlineStore';
+import { getRoom, updateRoom } from '@/domain/onlineStore';
 import { makeMove, calculateWinner, checkDraw } from '@/domain/gameEngine';
 
 export async function POST(request: Request) {
-  await cleanup();
   const { roomId, playerId, index } = await request.json();
 
   if (!roomId || !playerId || typeof index !== 'number') {
@@ -40,13 +39,18 @@ export async function POST(request: Request) {
   const winner = calculateWinner(newBoard);
   const isDraw = !winner && checkDraw(newBoard);
   const nextPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
+  const now = Date.now();
 
-  await updateRoom(roomId, {
+  const updates: Record<string, unknown> = {
     board: newBoard,
     currentPlayer: nextPlayer,
     winner: winner || (isDraw ? 'BOTH' : null),
     status: winner || isDraw ? 'finished' : 'playing',
-  });
+  };
+  if (playerRole === 'X') updates.lastSeenX = now;
+  else updates.lastSeenO = now;
+
+  await updateRoom(roomId, updates);
 
   return NextResponse.json({
     board: newBoard,

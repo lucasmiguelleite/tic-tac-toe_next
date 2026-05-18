@@ -1,8 +1,11 @@
 import { NextResponse } from 'next/server';
-import { cleanup, getRoom, updateRoom } from '@/domain/onlineStore';
+import { getRoom } from '@/domain/onlineStore';
+import { setValue } from '@/domain/onlineStorage';
+import { ROOM_TTL_SECONDS, roomKey } from '@/domain/roomStore';
+
+const DISCONNECT_THRESHOLD_MS = 15000;
 
 export async function GET(request: Request) {
-  await cleanup();
   const { searchParams } = new URL(request.url);
   const roomId = searchParams.get('roomId');
   const playerId = searchParams.get('playerId');
@@ -22,13 +25,13 @@ export async function GET(request: Request) {
   } else if (room.playerO === playerId) {
     room.lastSeenO = now;
   }
-  await updateRoom(roomId, room);
+  await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
 
   const yourRole = room.playerX === playerId ? 'X' : room.playerO === playerId ? 'O' : null;
   const opponentLastSeen = yourRole === 'X' ? room.lastSeenO : room.lastSeenX;
   const opponentDisconnected = room.disconnected && room.disconnected !== yourRole;
   const opponentConnected = !opponentDisconnected && room.status !== 'waiting'
-    && opponentLastSeen > 0 && now - opponentLastSeen < 5000;
+    && opponentLastSeen > 0 && now - opponentLastSeen < DISCONNECT_THRESHOLD_MS;
 
   return NextResponse.json({
     board: room.board,

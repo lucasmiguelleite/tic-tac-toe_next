@@ -2,12 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Room } from '@/domain/types';
 
 vi.mock('@/domain/onlineStore', () => ({
-  cleanup: vi.fn(),
   createRoom: vi.fn(),
   joinRoom: vi.fn(),
   getRoom: vi.fn(),
   updateRoom: vi.fn(),
   disconnectPlayer: vi.fn(),
+}));
+
+vi.mock('@/domain/onlineStorage', () => ({
+  setValue: vi.fn(),
+}));
+
+vi.mock('@/domain/roomStore', () => ({
+  ROOM_TTL_SECONDS: 1800,
+  roomKey: (id: string) => `tic-tac-toe:room:${id}`,
 }));
 
 vi.mock('@/domain/gameEngine', () => ({
