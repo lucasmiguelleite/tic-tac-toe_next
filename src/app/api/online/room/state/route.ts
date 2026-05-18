@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRoom } from '@/domain/onlineStore';
-import { setValue } from '@/domain/onlineStorage';
-import { ROOM_TTL_SECONDS, roomKey } from '@/domain/roomStore';
+import { getRoom, updatePlayerSeen, getOpponentSeen } from '@/domain/onlineStore';
 
 const DISCONNECT_THRESHOLD_MS = 15000;
 
@@ -19,19 +17,17 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Room not found' }, { status: 404 });
   }
 
-  const now = Date.now();
-  if (room.playerX === playerId) {
-    room.lastSeenX = now;
-  } else if (room.playerO === playerId) {
-    room.lastSeenO = now;
-  }
-  await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
-
   const yourRole = room.playerX === playerId ? 'X' : room.playerO === playerId ? 'O' : null;
-  const opponentLastSeen = yourRole === 'X' ? room.lastSeenO : room.lastSeenX;
+
+  // Update own lastSeen via separate key — no read-modify-write on room
+  await updatePlayerSeen(roomId, playerId, room.playerX, room.playerO);
+
+  // Read opponent lastSeen from separate key
+  const opponentLastSeen = yourRole ? await getOpponentSeen(roomId, yourRole) : null;
+  const now = Date.now();
   const opponentDisconnected = room.disconnected && room.disconnected !== yourRole;
   const opponentConnected = !opponentDisconnected && room.status !== 'waiting'
-    && opponentLastSeen > 0 && now - opponentLastSeen < DISCONNECT_THRESHOLD_MS;
+    && opponentLastSeen !== null && now - opponentLastSeen < DISCONNECT_THRESHOLD_MS;
 
   return NextResponse.json({
     board: room.board,

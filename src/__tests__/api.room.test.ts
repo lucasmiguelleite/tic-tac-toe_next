@@ -7,6 +7,8 @@ vi.mock('@/domain/onlineStore', () => ({
   getRoom: vi.fn(),
   updateRoom: vi.fn(),
   disconnectPlayer: vi.fn(),
+  updatePlayerSeen: vi.fn(),
+  getOpponentSeen: vi.fn(),
 }));
 
 vi.mock('@/domain/onlineStorage', () => ({
@@ -121,6 +123,10 @@ describe('POST /api/online/room/join', () => {
 });
 
 describe('GET /api/online/room/state', () => {
+  beforeEach(() => {
+    vi.mocked(store.getOpponentSeen).mockResolvedValue(Date.now());
+  });
+
   it('returns 400 if missing params', async () => {
     const req = new Request('http://localhost/api/online/room/state');
     const res = await getState(req);
@@ -145,6 +151,7 @@ describe('GET /api/online/room/state', () => {
     expect(data.opponentNickname).toBe('Bob');
     expect(data.board).toEqual(Array(9).fill(null));
     expect(data.createdAt).toBeDefined();
+    expect(store.updatePlayerSeen).toHaveBeenCalledWith('ABC123', 'p1', 'p1', 'p2');
   });
 
   it('returns room state for player O', async () => {
@@ -155,6 +162,15 @@ describe('GET /api/online/room/state', () => {
     expect(data.yourRole).toBe('O');
     expect(data.yourNickname).toBe('Bob');
     expect(data.opponentNickname).toBe('Alice');
+  });
+
+  it('reports opponent disconnected when no recent seen', async () => {
+    vi.mocked(store.getRoom).mockReturnValue(makeRoom());
+    vi.mocked(store.getOpponentSeen).mockResolvedValue(null);
+    const req = new Request('http://localhost/api/online/room/state?roomId=ABC123&playerId=p1');
+    const res = await getState(req);
+    const data = await json(res);
+    expect(data.opponentConnected).toBe(false);
   });
 });
 

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getRoom, updateRoom } from '@/domain/onlineStore';
+import { getRoom, updateRoom, updatePlayerSeen } from '@/domain/onlineStore';
 import { makeMove, calculateWinner, checkDraw } from '@/domain/gameEngine';
 
 export async function POST(request: Request) {
@@ -39,18 +39,16 @@ export async function POST(request: Request) {
   const winner = calculateWinner(newBoard);
   const isDraw = !winner && checkDraw(newBoard);
   const nextPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
-  const now = Date.now();
 
-  const updates: Record<string, unknown> = {
+  await updateRoom(roomId, {
     board: newBoard,
     currentPlayer: nextPlayer,
     winner: winner || (isDraw ? 'BOTH' : null),
     status: winner || isDraw ? 'finished' : 'playing',
-  };
-  if (playerRole === 'X') updates.lastSeenX = now;
-  else updates.lastSeenO = now;
+  });
 
-  await updateRoom(roomId, updates);
+  // Update lastSeen via separate key — avoid modifying room for presence tracking
+  await updatePlayerSeen(roomId, playerId, room.playerX, room.playerO);
 
   return NextResponse.json({
     board: newBoard,

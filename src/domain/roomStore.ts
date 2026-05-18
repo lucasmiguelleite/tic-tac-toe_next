@@ -12,6 +12,23 @@ export { generateId };
 
 export const roomKey = (roomId: string) => `${ROOM_KEY_PREFIX}${roomId}`;
 
+// Separate lastSeen keys to avoid read-modify-write race on room object
+const SEEN_KEY_PREFIX = 'tic-tac-toe:seen:';
+const SEEN_TTL_SECONDS = 30;
+
+const seenKey = (roomId: string, role: Player) => `${SEEN_KEY_PREFIX}${roomId}:${role}`;
+
+export const updatePlayerSeen = async (roomId: string, playerId: string, playerX: string | null, playerO: string | null) => {
+  const role = playerX === playerId ? 'X' : playerO === playerId ? 'O' : null;
+  if (!role) return;
+  await setValue(seenKey(roomId, role), Date.now(), SEEN_TTL_SECONDS);
+};
+
+export const getOpponentSeen = async (roomId: string, yourRole: Player): Promise<number | null> => {
+  const opponentRole = yourRole === 'X' ? 'O' : 'X';
+  return getValue<number>(seenKey(roomId, opponentRole));
+};
+
 const generateCode = (): string => {
   let code = '';
   for (let i = 0; i < ROOM_CODE_LENGTH; i++) {
