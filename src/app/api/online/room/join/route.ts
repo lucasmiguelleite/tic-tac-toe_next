@@ -2,12 +2,12 @@ import { NextResponse } from 'next/server';
 import { cleanup, joinRoom } from '@/domain/onlineStore';
 
 export async function POST(request: Request) {
-  cleanup();
+  await cleanup();
   const { roomId, nickname } = await request.json();
   if (!roomId || typeof roomId !== 'string') {
     return NextResponse.json({ error: 'roomId is required' }, { status: 400 });
   }
-  const result = joinRoom(roomId.toUpperCase().trim(), nickname);
+  const result = await joinRoom(roomId.toUpperCase().trim(), nickname);
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }

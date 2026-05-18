@@ -35,6 +35,7 @@ src/
 │   ├── utils.ts           # Utilitários compartilhados (generateId)
 │   ├── roomStore.ts       # Gerenciamento de salas
 │   ├── queueStore.ts      # Fila de matchmaking
+│   ├── onlineStorage.ts   # Adapter Redis/Upstash com fallback local em memória
 │   └── onlineStore.ts     # Re-export dos stores acima
 │
 ├── hooks/                 # Estado e lógica de UI
@@ -108,10 +109,13 @@ Sincronização baseada em polling (adequado para serverless/Vercel):
 
 - **1s** polling de estado do jogo
 - **2s** polling de lobby e fila
+- **Redis/Upstash** para persistir salas e fila entre invocações serverless
 - **sendBeacon** para disconnect instantâneo ao fechar aba/navegador
 - **Optimistic updates** para movimentos (sem latência percebida)
 - **Votação de restart** — ambos os jogadores devem confirmar para reiniciar
 - Transição matched→playing aguarda carregamento do estado + delay mínimo de UX
+
+Em produção, configure as variáveis `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`. Sem elas, o app usa fallback em memória para desenvolvimento local e testes.
 
 ## Começando
 

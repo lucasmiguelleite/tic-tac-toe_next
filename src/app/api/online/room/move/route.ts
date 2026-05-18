@@ -3,14 +3,14 @@ import { cleanup, getRoom, updateRoom } from '@/domain/onlineStore';
 import { makeMove, calculateWinner, checkDraw } from '@/domain/gameEngine';
 
 export async function POST(request: Request) {
-  cleanup();
+  await cleanup();
   const { roomId, playerId, index } = await request.json();
 
   if (!roomId || !playerId || typeof index !== 'number') {
     return NextResponse.json({ error: 'roomId, playerId, and index are required' }, { status: 400 });
   }
 
-  const room = getRoom(roomId);
+  const room = await getRoom(roomId);
   if (!room) {
     return NextResponse.json({ error: 'Room not found' }, { status: 404 });
   }
@@ -41,7 +41,7 @@ export async function POST(request: Request) {
   const isDraw = !winner && checkDraw(newBoard);
   const nextPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
 
-  updateRoom(roomId, {
+  await updateRoom(roomId, {
     board: newBoard,
     currentPlayer: nextPlayer,
     winner: winner || (isDraw ? 'BOTH' : null),

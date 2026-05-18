@@ -14,6 +14,7 @@ src/
 │   ├── utils.ts         # generateId (compartilhado entre stores)
 │   ├── roomStore.ts     # CRUD de salas, disconnect, cleanup
 │   ├── queueStore.ts    # Fila de matchmaking, polling, timeout
+│   ├── onlineStorage.ts # Adapter Redis/Upstash com fallback em memória local/testes
 │   └── onlineStore.ts   # Re-export thin de roomStore + queueStore
 ├── hooks/           # Estado e lógica de UI (React hooks)
 │   ├── useGameState.ts          # Tabuleiro local (2 jogadores)
@@ -108,7 +109,7 @@ src/
 - Thin wrappers sobre domain store functions
 - Validação de input nas routes
 - Usam `gameEngine` para lógica de jogo (não duplicam regras)
-- Store é in-memory (`Map`) — adequado para demo/serverless
+- Store online usa Redis/Upstash em produção (`UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) com fallback em memória para desenvolvimento local/testes
 
 ### Online — sincronização
 - Polling-based (sem WebSocket)

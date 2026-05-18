@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { cleanup, pollQueue } from '@/domain/onlineStore';
 
 export async function GET(request: Request) {
-  cleanup();
+  await cleanup();
   const { searchParams } = new URL(request.url);
   const queueId = searchParams.get('queueId');
 
@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'queueId is required' }, { status: 400 });
   }
 
-  const result = pollQueue(queueId);
+  const result = await pollQueue(queueId);
   if (!result) {
     return NextResponse.json({ error: 'Queue entry not found or expired' }, { status: 404 });
   }

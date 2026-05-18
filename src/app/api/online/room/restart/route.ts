@@ -3,14 +3,14 @@ import { cleanup, getRoom, updateRoom } from '@/domain/onlineStore';
 import { BoardState } from '@/domain/types';
 
 export async function POST(request: Request) {
-  cleanup();
+  await cleanup();
   const { roomId, playerId } = await request.json();
 
   if (!roomId || !playerId) {
     return NextResponse.json({ error: 'roomId and playerId are required' }, { status: 400 });
   }
 
-  const room = getRoom(roomId);
+  const room = await getRoom(roomId);
   if (!room) {
     return NextResponse.json({ error: 'Room not found' }, { status: 404 });
   }
@@ -21,7 +21,7 @@ export async function POST(request: Request) {
   }
 
   if (!room.restartRequestedBy) {
-    updateRoom(roomId, { restartRequestedBy: playerRole });
+    await updateRoom(roomId, { restartRequestedBy: playerRole });
     return NextResponse.json({
       board: room.board,
       currentPlayer: room.currentPlayer,
@@ -38,7 +38,7 @@ export async function POST(request: Request) {
   const newPlayerX = room.playerO;
   const newPlayerO = room.playerX;
 
-  updateRoom(roomId, {
+  await updateRoom(roomId, {
     board: Array(9).fill(null) as BoardState,
     currentPlayer: 'X',
     winner: null,
