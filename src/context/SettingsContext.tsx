@@ -36,6 +36,14 @@ type SettingsContextType = {
 
 const SettingsContext = createContext<SettingsContextType | null>(null);
 
+const LoadingBar = () => (
+  <div className="fixed inset-0 flex flex-col items-center justify-center bg-white dark:bg-[#0a0a0a]">
+    <div className="w-48 h-1 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+      <div className="loading-bar h-full bg-blue-500 rounded-full" />
+    </div>
+  </div>
+);
+
 export const useSettings = () => {
   const ctx = useContext(SettingsContext);
   if (!ctx) throw new Error('useSettings must be used within SettingsProvider');
@@ -103,7 +111,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
 
   const value = useMemo(() => ({ theme, locale, sound, boardStyle, setTheme, setLocale, setSound, setBoardStyle, t }), [theme, locale, sound, boardStyle, setTheme, setLocale, setSound, setBoardStyle, t]);
 
-  if (!ready) return null;
+  if (!ready) return <LoadingBar />;
 
   return (
     <SettingsContext.Provider value={value}>
