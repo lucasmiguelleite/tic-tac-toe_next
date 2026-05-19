@@ -22,7 +22,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   // Track pending optimistic move to prevent flickering
   const pendingMoveRef = useRef<{ index: number; player: Player } | null>(null);
 
-  const applyState = useCallback((data: Record<string, unknown>) => {
+  const applyState = useCallback((data: Record<string, unknown>, skipConnectedStatus = false) => {
     const serverBoard = data.board as BoardState;
     const pm = pendingMoveRef.current;
 
@@ -42,7 +42,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     });
     setCurrentPlayer(data.currentPlayer as Player);
     setWinner(data.winner as GameResult);
-    setOpponentConnected(data.opponentConnected as boolean);
+    if (!skipConnectedStatus) setOpponentConnected(data.opponentConnected as boolean);
     if (data.yourRole) setYourRole(data.yourRole as Player);
     if (data.yourNickname) setYourNickname(data.yourNickname as string);
     if (data.opponentNickname) setOpponentNickname(data.opponentNickname as string);
@@ -95,16 +95,18 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
         if (res.ok) {
           const data = await res.json();
           if (!active) return;
-          applyState(data);
+          applyState(data, true);
           if (!data.opponentConnected && data.roomStatus === 'playing') {
             disconnectCheckCount++;
             if (disconnectCheckCount >= DISCONNECT_GRACE_CHECKS) {
+              setOpponentConnected(false);
               active = false;
               onDisconnect();
               return;
             }
           } else {
             disconnectCheckCount = 0;
+            if (data.opponentConnected) setOpponentConnected(true);
           }
           scheduleNext(nextPollDelay(data));
           return;

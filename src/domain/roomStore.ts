@@ -63,6 +63,7 @@ export const createRoom = async (nickname?: string) => {
   };
 
   await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
+  await setValue(seenKey(roomId, 'X'), now, SEEN_TTL_SECONDS);
   return { roomId, playerId, playerRole: 'X' as Player, nickname: name };
 };
 
@@ -73,11 +74,13 @@ export const joinRoom = async (roomId: string, nickname?: string) => {
 
   const playerId = generateId();
   const name = nickname?.trim() || `player-${playerId}`;
+  const now = Date.now();
   room.playerO = playerId;
   room.nicknameO = name;
   room.status = 'playing';
-  room.lastSeenO = Date.now();
+  room.lastSeenO = now;
   await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
+  await setValue(seenKey(roomId, 'O'), now, SEEN_TTL_SECONDS);
   return { ok: true as const, playerId, playerRole: 'O' as Player, nickname: name };
 };
 
