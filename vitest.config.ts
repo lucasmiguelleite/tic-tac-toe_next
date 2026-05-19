@@ -4,6 +4,7 @@ import path from 'path';
 export default defineConfig({
   test: {
     environment: 'jsdom',
+    testTimeout: 15_000,
   },
   resolve: {
     alias: {
