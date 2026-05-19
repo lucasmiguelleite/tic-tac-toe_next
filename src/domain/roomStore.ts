@@ -114,4 +114,7 @@ export const cleanupRooms = async () => {
   }
 };
 
-export const clearRooms = () => clearKeys(`${ROOM_KEY_PREFIX}*`);
+export const clearRooms = async () => {
+  await clearKeys(`${ROOM_KEY_PREFIX}*`);
+  await clearKeys(`${SEEN_KEY_PREFIX}*`);
+};
