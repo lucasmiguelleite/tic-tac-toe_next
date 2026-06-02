@@ -1,12 +1,18 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { BoardState, GameResult, Player } from '@/domain/types';
+import { BoardState, ConnectionStatus, GameResult, Player } from '@/domain/types';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 const ACTIVE_TURN_POLL_MS = 1000;
 const WAITING_TURN_POLL_MS = 2000;
 const BACKGROUND_POLL_MS = 5000;
 const DISCONNECT_GRACE_CHECKS = 3;
+const MAX_BACKOFF_MS = 30000;
+const JITTER_MAX_MS = 1000;
+const RECONNECT_THRESHOLD = 2;
+const OFFLINE_THRESHOLD = 5;
+const MOVE_CONFIRM_TIMEOUT_MS = 5000;
 
 export const useOnlineRoom = (roomId: string | null, playerId: string | null) => {
   const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
@@ -18,22 +24,21 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   const [opponentNickname, setOpponentNickname] = useState('');
   const [restartRequestedBy, setRestartRequestedBy] = useState<Player | null>(null);
   const [createdAt, setCreatedAt] = useState<number | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>('connected');
 
-  // Track pending optimistic move to prevent flickering
   const pendingMoveRef = useRef<{ index: number; player: Player } | null>(null);
+  const moveConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const applyState = useCallback((data: Record<string, unknown>, skipConnectedStatus = false) => {
     const serverBoard = data.board as BoardState;
     const pm = pendingMoveRef.current;
 
     if (pm && serverBoard[pm.index] === pm.player) {
-      // Server confirmed the move — clear pending
       pendingMoveRef.current = null;
     }
 
     setSquares(() => {
       if (pm && serverBoard[pm.index] !== pm.player) {
-        // Server hasn't registered our move yet — preserve it on top of server state
         const merged = [...serverBoard];
         merged[pm.index] = pm.player;
         return merged;
@@ -66,10 +71,16 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     let inFlight = false;
     let disconnectCheckCount = 0;
+    let consecutiveErrors = 0;
 
     const scheduleNext = (delay: number) => {
       if (!active) return;
       timeoutId = setTimeout(tick, delay);
+    };
+
+    const backoffDelay = (baseDelay: number) => {
+      const jitter = Math.floor(Math.random() * JITTER_MAX_MS);
+      return Math.min(baseDelay * Math.pow(2, consecutiveErrors) + jitter, MAX_BACKOFF_MS);
     };
 
     const nextPollDelay = (data?: Record<string, unknown>) => {
@@ -108,15 +119,19 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
             disconnectCheckCount = 0;
             if (data.opponentConnected) setOpponentConnected(true);
           }
+          consecutiveErrors = 0;
+          setConnectionStatus('connected');
           scheduleNext(nextPollDelay(data));
           return;
         }
       } catch {
-        // Retry
+        consecutiveErrors++;
+        if (consecutiveErrors >= OFFLINE_THRESHOLD) setConnectionStatus('offline');
+        else if (consecutiveErrors >= RECONNECT_THRESHOLD) setConnectionStatus('reconnecting');
       } finally {
         inFlight = false;
       }
-      scheduleNext(nextPollDelay());
+      scheduleNext(backoffDelay(nextPollDelay()));
     };
     tick();
     return () => {
@@ -127,27 +142,51 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
 
   const pollLobby = useCallback((onOpponentJoined: (data: Record<string, unknown>) => void) => {
     if (!roomId || !playerId) return () => {};
-    const id = setInterval(async () => {
+    let active = true;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let consecutiveErrors = 0;
+
+    const poll = async () => {
+      if (!active) return;
       try {
         const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
+        if (!active) return;
         if (res.ok) {
+          consecutiveErrors = 0;
+          setConnectionStatus('connected');
           const data = await res.json();
+          if (!active) return;
           if (data.roomStatus === 'playing') onOpponentJoined(data);
         }
+        timeoutId = setTimeout(poll, 2000);
       } catch {
-        // Retry
+        consecutiveErrors++;
+        if (consecutiveErrors >= OFFLINE_THRESHOLD) setConnectionStatus('offline');
+        else if (consecutiveErrors >= RECONNECT_THRESHOLD) setConnectionStatus('reconnecting');
+        const jitter = Math.floor(Math.random() * JITTER_MAX_MS);
+        const delay = Math.min(2000 * Math.pow(2, consecutiveErrors) + jitter, MAX_BACKOFF_MS);
+        timeoutId = setTimeout(poll, delay);
       }
-    }, 2000);
-    return () => clearInterval(id);
+    };
+    poll();
+    return () => { active = false; if (timeoutId) clearTimeout(timeoutId); };
   }, [roomId, playerId]);
 
   const makeMove = useCallback(async (index: number) => {
     if (yourRole !== currentPlayer || !roomId || !playerId) return;
-    // Optimistic update with pending tracking
     pendingMoveRef.current = { index, player: currentPlayer };
     setSquares((prev) => prev.map((cell, i) => (i === index ? currentPlayer : cell)));
+
+    if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current);
+    moveConfirmTimeoutRef.current = setTimeout(() => {
+      if (pendingMoveRef.current && pendingMoveRef.current.index === index) {
+        pendingMoveRef.current = null;
+        setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
+      }
+    }, MOVE_CONFIRM_TIMEOUT_MS);
+
     try {
-      const res = await fetch('/api/online/room/move', {
+      const res = await fetchWithRetry('/api/online/room/move', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, playerId, index }),
@@ -159,16 +198,21 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
         pendingMoveRef.current = null;
       } else {
         pendingMoveRef.current = null;
+        setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
       }
     } catch {
       pendingMoveRef.current = null;
+      setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
+    } finally {
+      if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current);
+      moveConfirmTimeoutRef.current = null;
     }
   }, [yourRole, currentPlayer, roomId, playerId]);
 
   const restart = useCallback(async (currentRole: Player | null) => {
     if (!roomId || !playerId) return false;
     try {
-      const res = await fetch('/api/online/room/restart', {
+      const res = await fetchWithRetry('/api/online/room/restart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId, playerId }),
@@ -209,12 +253,14 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     setYourRole(null);
     setRestartRequestedBy(null);
     setCreatedAt(null);
+    setConnectionStatus('connected');
     pendingMoveRef.current = null;
   }, []);
 
   return {
     squares, currentPlayer, winner, opponentConnected,
     yourRole, yourNickname, opponentNickname, restartRequestedBy, createdAt,
+    connectionStatus,
     fetchState, pollGameState, pollLobby, applyState,
     makeMove, restart, setInitialRoomState, resetRoom,
   };

@@ -44,3 +44,5 @@ export type OnlinePhase =
   | 'playing'
   | 'opponent-disconnected'
   | 'error';
+
+export type ConnectionStatus = 'connected' | 'reconnecting' | 'offline';

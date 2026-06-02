@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { OnlinePhase, Player } from '@/domain/types';
+import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useOnlineRoom } from './useOnlineRoom';
 import { useOnlineQueue } from './useOnlineQueue';
 import { useOnlineConnection } from './useOnlineConnection';
@@ -58,7 +59,7 @@ export const useOnlineGame = (nickname?: string) => {
   const createRoom = useCallback(async () => {
     setPhase('creating-room');
     try {
-      const res = await fetch('/api/online/room/create', {
+      const res = await fetchWithRetry('/api/online/room/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nickname }),
@@ -77,7 +78,7 @@ export const useOnlineGame = (nickname?: string) => {
   const joinRoom = useCallback(async (code: string) => {
     setPhase('joining-room');
     try {
-      const res = await fetch('/api/online/room/join', {
+      const res = await fetchWithRetry('/api/online/room/join', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ roomId: code, nickname }),
@@ -145,6 +146,7 @@ export const useOnlineGame = (nickname?: string) => {
     opponentNickname: room.opponentNickname,
     restartRequestedBy: room.restartRequestedBy,
     createdAt: room.createdAt,
+    connectionStatus: room.connectionStatus,
     createRoom, joinRoom, enterQueue,
     exitQueue: exitQueueAction,
     makeMove: room.makeMove,

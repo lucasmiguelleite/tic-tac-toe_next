@@ -1,6 +1,6 @@
 'use client';
 
-import { GameResult, Player } from '@/domain/types';
+import { ConnectionStatus, GameResult, Player } from '@/domain/types';
 import { useTranslation } from '@/context/SettingsContext';
 
 type LocalGameStatusProps = {
@@ -14,6 +14,7 @@ type OnlineGameStatusProps = LocalGameStatusProps & {
   opponentNickname: string;
   yourNickname: string;
   waitingForOpponentRestart: boolean;
+  connectionStatus?: ConnectionStatus;
 };
 
 const GameStatusInner = ({
@@ -24,7 +25,8 @@ const GameStatusInner = ({
   opponentNickname,
   yourNickname,
   waitingForOpponentRestart,
-}: LocalGameStatusProps & { yourRole?: Player; opponentConnected?: boolean; opponentNickname?: string; yourNickname?: string; waitingForOpponentRestart?: boolean }) => {
+  connectionStatus,
+}: LocalGameStatusProps & { yourRole?: Player; opponentConnected?: boolean; opponentNickname?: string; yourNickname?: string; waitingForOpponentRestart?: boolean; connectionStatus?: ConnectionStatus }) => {
   const { t } = useTranslation();
 
   if (waitingForOpponentRestart) {
@@ -50,6 +52,13 @@ const GameStatusInner = ({
   };
 
   return (
+    <div className="flex flex-col items-center">
+      {connectionStatus === 'reconnecting' && (
+        <p className="font-semibold text-sm text-yellow-600 dark:text-yellow-400 mb-1">{t('status.reconnecting')}</p>
+      )}
+      {connectionStatus === 'offline' && (
+        <p className="font-semibold text-sm text-red-500 mb-1">{t('status.offline')}</p>
+      )}
     <div className="flex justify-center text-center my-10 mx-4 sm:mx-10 max-w-full overflow-hidden">
       {!winner && (
         <p className="font-bold text-2xl sm:text-4xl text-center max-w-full break-all">
@@ -70,6 +79,7 @@ const GameStatusInner = ({
         </p>
       )}
       {winner === 'BOTH' && <p className="font-bold text-4xl">{t('status.draw')}</p>}
+    </div>
     </div>
   );
 };

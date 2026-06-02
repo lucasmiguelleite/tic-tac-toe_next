@@ -151,6 +151,7 @@ const OnlinePage = () => {
             opponentNickname={game.opponentNickname}
             yourNickname={game.yourNickname}
             waitingForOpponentRestart={game.restartRequestedBy === game.yourRole}
+            connectionStatus={game.connectionStatus}
           />
           <Board
             squares={game.squares}
