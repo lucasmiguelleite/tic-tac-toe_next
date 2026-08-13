@@ -1,189 +1,20 @@
-'use client';
+import type { Metadata } from "next";
+import { siteConfig } from "@/site.config";
+import OnlineView from "./OnlineView";
 
-import { useState, useEffect, useRef } from 'react';
-import { redirect } from 'next/navigation';
-import Home from '../../components/Home';
-import { OnlineGameStatus as GameStatus } from '../../components/GameStatus';
-import { OnlineBoard as Board } from '../../components/Board';
-import OnlineGameActions from '../../components/OnlineGameActions';
-import OnlineMatchmaking from '../../components/OnlineMatchmaking';
-import OnlineLobby from '../../components/OnlineLobby';
-import OnlineQueue from '../../components/OnlineQueue';
-import { useOnlineGame } from '../../hooks/useOnlineGame';
-import { useGameSounds } from '../../hooks/useGameSounds';
-import { useTranslation } from '../../context/SettingsContext';
-import { getWinLine } from '../../domain/gameEngine';
-import { playEnterQueue, playMatchFound, playRestartVote, playDisconnect, playExitWarning } from '../../utils/sounds';
-import { Player } from '../../domain/types';
-
-const ROOM_TTL = 30 * 60;
-
-const formatCountdown = (seconds: number) => {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+export const metadata: Metadata = {
+  title: "Online Multiplayer",
+  description:
+    "Play tic-tac-toe online against a friend or a random opponent. Quick-match matchmaking, private room codes, live sync and instant rematches — no sign-up required.",
+  alternates: { canonical: "/online" },
+  openGraph: {
+    url: siteConfig.absoluteUrl("/online"),
+    title: "Tic-Tac-Toe — Online Multiplayer (Quick Match & Rooms)",
+    description:
+      "Match with a random opponent or create a private room and invite a friend. Real-time online tic-tac-toe.",
+  },
 };
 
-const OnlinePage = () => {
-  const [nickname, setNickname] = useState('');
-  const [nicknameSet, setNicknameSet] = useState(false);
-  const game = useOnlineGame(nicknameSet ? nickname : undefined);
-  const { t } = useTranslation();
-  const prevPhaseRef = useRef(game.phase);
-  const prevRestartRef = useRef<Player | null>(null);
-  const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
-
-  useGameSounds({ squares: game.squares, winner: game.winner, playerRole: game.yourRole ?? undefined });
-
-  useEffect(() => {
-    if (game.createdAt) {
-      const elapsed = Math.floor((Date.now() - game.createdAt) / 1000);
-      setRoomRemaining(Math.max(ROOM_TTL - elapsed, 0));
-    }
-  }, [game.createdAt]);
-
-  useEffect(() => {
-    if (roomRemaining === null || roomRemaining <= 0) return;
-    const id = setInterval(() => setRoomRemaining((r) => Math.max((r ?? 0) - 1, 0)), 1000);
-    return () => clearInterval(id);
-  }, [roomRemaining]);
-
-  useEffect(() => {
-    if (game.phase === 'in-queue' && prevPhaseRef.current !== 'in-queue') {
-      playEnterQueue();
-    }
-    if (game.phase === 'matched' && prevPhaseRef.current !== 'matched') {
-      playMatchFound();
-    }
-    if (game.phase === 'opponent-disconnected' && prevPhaseRef.current !== 'opponent-disconnected') {
-      playDisconnect();
-    }
-    prevPhaseRef.current = game.phase;
-  }, [game.phase]);
-
-  useEffect(() => {
-    if (game.restartRequestedBy && game.restartRequestedBy !== prevRestartRef.current) {
-      playRestartVote();
-    }
-    prevRestartRef.current = game.restartRequestedBy;
-  }, [game.restartRequestedBy]);
-
-  if (!nicknameSet) {
-    return (
-      <div>
-        <Home />
-        <div className="relative">
-          <div className="static grid grid-cols-1 mx-10 h-max md:mt-40">
-            <div className="inline-flex justify-center">
-              <p className="font-bold text-4xl mb-10 text-center">{t('online.chooseNickname')}</p>
-            </div>
-            <div className="flex flex-col items-center gap-4">
-              <input
-                type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
-                maxLength={20}
-                placeholder={t('online.nicknamePlaceholder')}
-                className="text-2xl font-bold text-center w-72 h-14 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                onKeyDown={(e) => e.key === 'Enter' && setNicknameSet(true)}
-              />
-              <button
-                onClick={() => setNicknameSet(true)}
-                className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-40 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
-              >
-                <p className="font-bold">{t('online.continue')}</p>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div>
-      <Home />
-      {game.phase === 'select-mode' && (
-        <OnlineMatchmaking
-          onCreateRoom={game.createRoom}
-          onEnterQueue={game.enterQueue}
-          onJoinRoom={game.joinRoom}
-          onBack={() => { game.exit(); redirect('/'); }}
-        />
-      )}
-      {(game.phase === 'creating-room' || game.phase === 'joining-room') && (
-        <div className="flex justify-center my-40">
-          <div className="w-10 h-10 border-4 border-gray-300 dark:border-gray-600 border-t-blue-500 rounded-full animate-spin" />
-        </div>
-      )}
-      {game.phase === 'lobby' && game.roomId && (
-        <OnlineLobby roomId={game.roomId} onCancel={game.exit} />
-      )}
-      {game.phase === 'in-queue' && (
-        <OnlineQueue onCancel={game.exitQueue} />
-      )}
-      {game.phase === 'matched' && (
-        <div className="flex flex-col items-center justify-center md:mt-52">
-          <p className="font-bold text-5xl mb-6 animate-bounce">{t('online.matchFound')}</p>
-          <div className="flex gap-2">
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className="w-3 h-3 bg-green-500 rounded-full animate-bounce"
-                style={{ animationDelay: `${i * 0.15}s` }}
-              />
-            ))}
-          </div>
-        </div>
-      )}
-      {(game.phase === 'playing' || game.phase === 'opponent-disconnected') && (
-        <div className="flex flex-col">
-          {roomRemaining !== null && (
-            <p className="text-xs text-gray-400 dark:text-gray-500 text-center mb-1">
-              {t('online.roomExpires')} {formatCountdown(roomRemaining)}
-            </p>
-          )}
-          <GameStatus
-            winner={game.winner}
-            currentPlayer={game.currentPlayer}
-            yourRole={game.yourRole!}
-            opponentConnected={game.opponentConnected}
-            opponentNickname={game.opponentNickname}
-            yourNickname={game.yourNickname}
-            waitingForOpponentRestart={game.restartRequestedBy === game.yourRole}
-            connectionStatus={game.connectionStatus}
-          />
-          <Board
-            squares={game.squares}
-            onSquareClick={game.makeMove}
-            winner={game.winner}
-            isYourTurn={game.yourRole === game.currentPlayer}
-            winLine={getWinLine(game.squares)}
-            winnerPlayer={game.winner as 'X' | 'O' | null}
-            yourRole={game.yourRole!}
-          />
-          <OnlineGameActions
-            onExit={() => { playExitWarning(); game.exit(); redirect('/'); }}
-            showPlayAgain={Boolean(game.winner)}
-            onPlayAgain={game.restart}
-            restartRequestedBy={game.restartRequestedBy}
-            yourRole={game.yourRole}
-          />
-        </div>
-      )}
-      {game.phase === 'error' && (
-        <div className="text-center my-40">
-          <p className="font-bold text-3xl text-red-500 mb-6">{game.error}</p>
-          <button
-            onClick={game.exit}
-            className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-40 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
-          >
-            <p className="font-bold">{t('online.tryAgain')}</p>
-          </button>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default OnlinePage;
+export default function Page() {
+  return <OnlineView />;
+}

@@ -1,30 +1,20 @@
-"use client";
+import type { Metadata } from "next";
+import { siteConfig } from "@/site.config";
+import TwoPlayersView from "./TwoPlayersLocalView";
 
-import { redirect } from "next/navigation";
-import Home from "../../components/Home";
-import { LocalGameStatus as GameStatus } from "../../components/GameStatus";
-import { LocalBoard as Board } from "../../components/Board";
-import GameActions from "../../components/GameActions";
-import { useGameState } from "../../hooks/useGameState";
-import { useGameSounds } from "../../hooks/useGameSounds";
-import { getWinLine } from "../../domain/gameEngine";
-import { playExitWarning } from "../../utils/sounds";
-
-const TwoPlayersPage = () => {
-  const { squares, currentPlayer, winner, makeMove, restart } = useGameState();
-
-  useGameSounds({ squares, winner });
-
-  return (
-    <div>
-      <Home />
-      <div className="flex flex-col">
-        <GameStatus winner={winner} currentPlayer={currentPlayer} />
-        <Board squares={squares} onSquareClick={makeMove} winner={winner} winLine={getWinLine(squares)} winnerPlayer={winner as 'X' | 'O' | null} />
-        <GameActions onRestart={restart} onExit={() => { playExitWarning(); redirect("/"); }} />
-      </div>
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "2 Players Local",
+  description:
+    "Play tic-tac-toe with a friend on the same device. Pass-and-play local 2-player mode with instant restarts and gamified board styles.",
+  alternates: { canonical: "/two-players-local" },
+  openGraph: {
+    url: siteConfig.absoluteUrl("/two-players-local"),
+    title: "Tic-Tac-Toe — Local 2 Players on One Device",
+    description:
+      "Pass-and-play tic-tac-toe for two players on the same screen.",
+  },
 };
 
-export default TwoPlayersPage;
+export default function Page() {
+  return <TwoPlayersView />;
+}

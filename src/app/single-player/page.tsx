@@ -1,49 +1,20 @@
-"use client";
+import type { Metadata } from "next";
+import { siteConfig } from "@/site.config";
+import SinglePlayerView from "./SinglePlayerView";
 
-import { redirect } from "next/navigation";
-import Home from "../../components/Home";
-import DifficultySelect from "../../components/DifficultySelect";
-import PlayerSelect from "../../components/PlayerSelect";
-import { LocalGameStatus as GameStatus } from "../../components/GameStatus";
-import { LocalBoard as Board } from "../../components/Board";
-import GameActions from "../../components/GameActions";
-import { useSinglePlayerGame } from "../../hooks/useSinglePlayerGame";
-import { useGameSounds } from "../../hooks/useGameSounds";
-import { getWinLine } from "../../domain/gameEngine";
-import { playExitWarning } from "../../utils/sounds";
-
-const SinglePlayerPage = () => {
-  const {
-    squares,
-    currentPlayer,
-    winner,
-    player,
-    makeMove,
-    restart,
-    difficultySelected,
-    playerSelected,
-    selectDifficulty,
-    selectPlayer,
-  } = useSinglePlayerGame();
-
-  useGameSounds({ squares, winner, playerRole: player });
-
-  return (
-    <div>
-      <Home />
-      {!difficultySelected ? (
-        <DifficultySelect onSelect={selectDifficulty} />
-      ) : !playerSelected ? (
-        <PlayerSelect onSelect={selectPlayer} />
-      ) : (
-        <div className="flex flex-col">
-          <GameStatus winner={winner} currentPlayer={currentPlayer} />
-          <Board squares={squares} onSquareClick={makeMove} winner={winner} winLine={getWinLine(squares)} winnerPlayer={winner as 'X' | 'O' | null} />
-          <GameActions onRestart={restart} onExit={() => { playExitWarning(); redirect("/"); }} />
-        </div>
-      )}
-    </div>
-  );
+export const metadata: Metadata = {
+  title: "Play vs AI",
+  description:
+    "Play tic-tac-toe against the computer. Choose your side (X or O) and take on three AI difficulty levels — Easy, Medium and a Hard mode that plays a perfect game.",
+  alternates: { canonical: "/single-player" },
+  openGraph: {
+    url: siteConfig.absoluteUrl("/single-player"),
+    title: "Play Tic-Tac-Toe vs AI — 3 Difficulty Levels",
+    description:
+      "Challenge the tic-tac-toe AI on Easy, Medium or Hard and pick your mark (X or O).",
+  },
 };
 
-export default SinglePlayerPage;
+export default function Page() {
+  return <SinglePlayerView />;
+}
