@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateWinner, checkDraw, makeMove } from '@/domain/gameEngine';
+import { calculateWinner, checkDraw, computeGameResult, makeMove } from '@/domain/gameEngine';
 import { BoardState } from '@/domain/types';
 
 describe('calculateWinner', () => {
@@ -61,6 +61,32 @@ describe('checkDraw', () => {
 
   it('returns false for empty board', () => {
     expect(checkDraw(Array(9).fill(null))).toBe(false);
+  });
+});
+
+describe('computeGameResult', () => {
+  it('returns null for empty board', () => {
+    expect(computeGameResult(Array(9).fill(null))).toBeNull();
+  });
+
+  it('returns null while the game is still ongoing', () => {
+    const board: BoardState = ['X', 'O', null, null, 'X', null, null, null, 'O'];
+    expect(computeGameResult(board)).toBeNull();
+  });
+
+  it('returns the winning player when there is a winner', () => {
+    const board: BoardState = ['X', 'X', 'X', 'O', 'O', null, null, null, null];
+    expect(computeGameResult(board)).toBe('X');
+  });
+
+  it('returns "BOTH" on a full board with no winner (draw)', () => {
+    const board: BoardState = ['X', 'O', 'X', 'X', 'O', 'O', 'O', 'X', 'X'];
+    expect(computeGameResult(board)).toBe('BOTH');
+  });
+
+  it('prefers a winner over a full board (no false draw)', () => {
+    const board: BoardState = ['X', 'O', 'X', 'X', 'X', 'O', 'O', 'X', 'X'];
+    expect(computeGameResult(board)).toBe('X');
   });
 });
 

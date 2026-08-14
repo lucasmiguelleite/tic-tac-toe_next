@@ -29,6 +29,14 @@ export const checkDraw = (squares: BoardState): boolean => {
   return squares.every((cell) => cell !== null);
 };
 
+/** Single source of truth for the overall result of a board: winning player, draw ('BOTH'), or ongoing (null). */
+export const computeGameResult = (squares: BoardState): GameResult => {
+  const winner = calculateWinner(squares);
+  if (winner) return winner;
+  if (checkDraw(squares)) return 'BOTH';
+  return null;
+};
+
 export const makeMove = (squares: BoardState, index: number, player: Player): BoardState => {
   if (squares[index]) return squares;
   return squares.map((cell, i) => (i === index ? player : cell));

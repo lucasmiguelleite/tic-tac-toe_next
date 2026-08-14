@@ -74,6 +74,12 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     const initialSound = storedSound ? { ...defaultSoundSettings, ...JSON.parse(storedSound) } : defaultSoundSettings;
     const initialBoardStyle = (localStorage.getItem('boardStyle') as BoardStyle) || 'classic';
 
+    /* eslint-disable react-hooks/set-state-in-effect --
+       One-time mount hydration: reads browser-only APIs (localStorage,
+       matchMedia, navigator) and reveals the app. The `ready` gate above
+       renders a <LoadingBar/> until this runs, preventing any hydration
+       mismatch — this is the standard Next.js theme-hydration pattern.
+       (A useSyncExternalStore refactor would remove this exception.) */
     setThemeState(initialTheme);
     setLocaleState(initialLocale);
     setSoundState(initialSound);
@@ -81,6 +87,7 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
     setBoardStyleState(initialBoardStyle);
     document.documentElement.classList.toggle('dark', initialTheme === 'dark');
     setReady(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const setTheme = useCallback((t: Theme) => {

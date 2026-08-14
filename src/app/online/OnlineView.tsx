@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { redirect } from 'next/navigation';
 import Home from '../../components/Home';
 import { OnlineGameStatus as GameStatus } from '../../components/GameStatus';
@@ -31,22 +31,25 @@ const OnlineView = () => {
   const { t } = useTranslation();
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
-  const [roomRemaining, setRoomRemaining] = useState<number | null>(null);
+  const [now, setNow] = useState(() => Date.now());
+  // roomRemaining is derived from a ticking `now` + createdAt, not stored —
+  // avoids setState-in-effect and prevents countdown drift.
+  const roomRemaining = useMemo<number | null>(
+    () => (game.createdAt ? Math.max(ROOM_TTL - Math.floor((now - game.createdAt) / 1000), 0) : null),
+    [now, game.createdAt],
+  );
 
   useGameSounds({ squares: game.squares, winner: game.winner, playerRole: game.yourRole ?? undefined });
 
+  // Sync a ticking `now` while the room is alive (and not yet expired). The
+  // setState lives in the interval callback, not the effect body, so it isn't
+  // a synchronous setState-in-effect.
   useEffect(() => {
-    if (game.createdAt) {
-      const elapsed = Math.floor((Date.now() - game.createdAt) / 1000);
-      setRoomRemaining(Math.max(ROOM_TTL - elapsed, 0));
-    }
-  }, [game.createdAt]);
-
-  useEffect(() => {
-    if (roomRemaining === null || roomRemaining <= 0) return;
-    const id = setInterval(() => setRoomRemaining((r) => Math.max((r ?? 0) - 1, 0)), 1000);
+    if (!game.createdAt) return;
+    if (roomRemaining !== null && roomRemaining <= 0) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, [roomRemaining]);
+  }, [game.createdAt, roomRemaining]);
 
   useEffect(() => {
     if (game.phase === 'in-queue' && prevPhaseRef.current !== 'in-queue') {
