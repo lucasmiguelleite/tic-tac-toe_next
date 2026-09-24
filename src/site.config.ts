@@ -2,18 +2,33 @@
  * Site-wide configuration — single source of truth consumed by metadata,
  * sitemap, robots, manifest, and the dynamic OG image / icon.
  *
- * Set NEXT_PUBLIC_SITE_URL on Vercel (e.g. https://tic-tac-toe.example.com)
- * to get correct canonical URLs, sitemap entries and OpenGraph links.
+ * Set NEXT_PUBLIC_SITE_URLS on Vercel with one or more comma- or
+ * whitespace-separated URLs (e.g. https://tic-tac-toe.example.com,
+ * https://www.tic-tac-toe.example.com). The first URL is canonical and is
+ * used for metadata, sitemap entries and OpenGraph links.
  */
-const rawUrl =
-  process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "") ||
-  "https://tic-tac-toe.vercel.app";
+const DEFAULT_SITE_URL = "https://tic-tac-toe.vercel.app";
+
+const siteUrls = (
+  process.env.NEXT_PUBLIC_SITE_URLS?.split(/[\s,]+/) ?? [DEFAULT_SITE_URL]
+)
+  .map((url) => url.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
+const urls = siteUrls.length > 0 ? siteUrls : [DEFAULT_SITE_URL];
+const canonicalUrl = urls[0];
 
 export const siteConfig = {
-  url: rawUrl,
-  /** Absolute URL helper, e.g. absoluteUrl("/single-player") */
+  /** Canonical URL — retained for consumers that need a single origin. */
+  url: canonicalUrl,
+  /** All configured public origins, with the canonical URL first. */
+  urls,
+  /** Absolute canonical URL helper, e.g. absoluteUrl("/single-player") */
   absoluteUrl: (path = "/") =>
-    `${rawUrl}${path.startsWith("/") ? path : `/${path}`}`,
+    `${canonicalUrl}${path.startsWith("/") ? path : `/${path}`}`,
+  /** An absolute URL for every configured public origin. */
+  absoluteUrls: (path = "/") =>
+    urls.map((url) => `${url}${path.startsWith("/") ? path : `/${path}`}`),
   name: "Tic-Tac-Toe",
   shortName: "Tic-Tac-Toe",
   titleDefault: "Tic-Tac-Toe — Play Free Online & Multiplayer Game",
