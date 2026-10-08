@@ -36,6 +36,9 @@ export async function POST(request: Request) {
   // Opponent requested restart — reset and swap roles
   const newPlayerX = room.playerO;
   const newPlayerO = room.playerX;
+  // Nicknames belong to players, so they must move with the player IDs.
+  const newNicknameX = room.nicknameO;
+  const newNicknameO = room.nicknameX;
 
   await updateRoom(roomId, {
     board: Array(9).fill(null) as BoardState,
@@ -44,6 +47,8 @@ export async function POST(request: Request) {
     status: 'playing',
     playerX: newPlayerX,
     playerO: newPlayerO,
+    nicknameX: newNicknameX,
+    nicknameO: newNicknameO,
     restartRequestedBy: null,
   });
 

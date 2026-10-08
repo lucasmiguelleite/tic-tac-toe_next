@@ -340,7 +340,7 @@ describe('POST /api/online/room/restart', () => {
     expect(data.waitingForOpponent).toBe(true);
   });
 
-  it('opponent accepts restart: resets board and swaps roles', async () => {
+  it('opponent accepts restart: resets board and swaps player identities', async () => {
     vi.mocked(store.getRoom).mockReturnValue(makeRoom({ winner: 'X', restartRequestedBy: 'X' }));
     const req = new Request('http://localhost/api/online/room/restart', {
       method: 'POST', body: JSON.stringify({ roomId: 'ABC123', playerId: 'p2' }),
@@ -351,7 +351,9 @@ describe('POST /api/online/room/restart', () => {
     expect(data.winner).toBeNull();
     expect(data.currentPlayer).toBe('X');
     expect(store.updateRoom).toHaveBeenCalledWith('ABC123', expect.objectContaining({
-      playerX: 'p2', playerO: 'p1', restartRequestedBy: null,
+      playerX: 'p2', playerO: 'p1',
+      nicknameX: 'Bob', nicknameO: 'Alice',
+      restartRequestedBy: null,
     }));
   });
 });
