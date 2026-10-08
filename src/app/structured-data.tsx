@@ -13,7 +13,7 @@ const graph = {
       name: siteConfig.name,
       url: siteConfig.url,
       description: siteConfig.description,
-      inLanguage: "en",
+      inLanguage: ["en", "pt-BR"],
       publisher: { "@id": `${siteConfig.url}/#author` },
     },
     {

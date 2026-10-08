@@ -3,8 +3,7 @@ import { siteConfig } from "@/site.config";
 import HomeView from "./HomeView";
 
 export const metadata: Metadata = {
-  description:
-    "Free tic-tac-toe you can play three ways: beat the AI across 3 difficulty levels, share a device for local 2-player, or match with a friend online. Gamified board styles and sounds.",
+  description: siteConfig.seo.en.home.description,
   alternates: { canonical: "/" },
   openGraph: {
     url: siteConfig.url,
