@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 const INITIAL_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 30000;
@@ -13,8 +13,11 @@ export const useOnlineRealtime = (
   roomId: string | null,
   playerId: string | null,
   enabled: boolean,
-  onRoomUpdated: () => void,
+  onState: (state: Record<string, unknown>) => void,
 ) => {
+  const socketRef = useRef<WebSocket | null>(null);
+  const onStateRef = useRef(onState);
+  useEffect(() => { onStateRef.current = onState; }, [onState]);
   useEffect(() => {
     if (!enabled || !roomId || !playerId || typeof WebSocket === 'undefined') return;
 
@@ -28,14 +31,15 @@ export const useOnlineRealtime = (
       const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
       const params = new URLSearchParams({ roomId, playerId });
       socket = new WebSocket(`${protocol}//${window.location.host}/api/online/realtime?${params}`);
+      socketRef.current = socket;
 
       socket.addEventListener('open', () => {
         reconnectDelay = INITIAL_RECONNECT_MS;
-        onRoomUpdated();
       });
       socket.addEventListener('message', (event) => {
         try {
-          if ((JSON.parse(event.data) as { type?: string }).type === 'room-updated') onRoomUpdated();
+          const message = JSON.parse(event.data) as { type?: string; state?: Record<string, unknown> };
+          if (message.type === 'state' && message.state) onStateRef.current(message.state);
         } catch {
           // Ignore malformed events; the polling fallback will re-synchronize.
         }
@@ -52,6 +56,13 @@ export const useOnlineRealtime = (
       disposed = true;
       if (reconnectTimer) clearTimeout(reconnectTimer);
       socket?.close();
+      socketRef.current = null;
     };
-  }, [roomId, playerId, enabled, onRoomUpdated]);
+  }, [roomId, playerId, enabled]);
+
+  return useCallback((message: Record<string, unknown>) => {
+    if (socketRef.current?.readyState !== WebSocket.OPEN) return false;
+    socketRef.current.send(JSON.stringify(message));
+    return true;
+  }, []);
 };

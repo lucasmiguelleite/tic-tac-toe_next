@@ -18,32 +18,20 @@ export const useOnlineGame = (nickname?: string) => {
   const queue = useOnlineQueue();
   const { disconnect } = useOnlineConnection(roomId, playerId);
 
-  // Push events refresh state immediately; polling remains the recovery path
-  // for a dropped or unsupported WebSocket connection.
-  useOnlineRealtime(
+  const realtimeSend = useOnlineRealtime(
     roomId,
     playerId,
     phase === 'lobby' || phase === 'playing',
-    room.fetchState,
+    (state) => {
+      room.applyState(state);
+      if (state.roomStatus === 'playing' && phase === 'lobby') setPhase('playing');
+      if (state.roomStatus === 'playing' && state.opponentConnected === false) setPhase('opponent-disconnected');
+    },
   );
-
-  // Poll game state when playing
   useEffect(() => {
-    if (phase !== 'playing' || !roomId || !playerId) return;
-    return room.pollGameState(
-      () => setPhase('opponent-disconnected'),
-      () => { setError('Room expired'); setPhase('error'); },
-    );
-  }, [phase, roomId, playerId, room.pollGameState]);
-
-  // Poll lobby state
-  useEffect(() => {
-    if (phase !== 'lobby' || !roomId || !playerId) return;
-    return room.pollLobby((data) => {
-      if ((data as Record<string, unknown>).yourNickname) room.setInitialRoomState(room.yourRole || 'X', room.yourNickname, data as Record<string, unknown>);
-      setPhase('playing');
-    });
-  }, [phase, roomId, playerId, room.pollLobby, room.setInitialRoomState, room.yourRole, room.yourNickname]);
+    room.setRealtimeSend(realtimeSend);
+    return () => room.setRealtimeSend(null);
+  }, [room.setRealtimeSend, realtimeSend]);
 
   // Poll queue
   useEffect(() => {
@@ -55,12 +43,12 @@ export const useOnlineGame = (nickname?: string) => {
     );
   }, [phase, queue.queueId, queue.pollQueue, room.setInitialRoomState, nickname]);
 
-  // Matched → playing transition (wait for both fetch + minimum UX delay)
+  // Matched → playing transition; the socket delivers the initial state.
   useEffect(() => {
     if (phase !== 'matched') return;
     let cancelled = false;
     const minDelay = new Promise<void>((r) => setTimeout(r, 300));
-    Promise.all([room.fetchState(), minDelay]).then(() => {
+    minDelay.then(() => {
       if (!cancelled) setPhase('playing');
     });
     return () => { cancelled = true; };
@@ -104,15 +92,6 @@ export const useOnlineGame = (nickname?: string) => {
       setPlayerId(data.playerId);
       room.setInitialRoomState(data.playerRole, data.nickname);
       setPhase('playing');
-      // Fetch full state immediately so nicknames are available
-      setTimeout(async () => {
-        try {
-          const stateRes = await fetch(`/api/online/room/state?roomId=${rid}&playerId=${data.playerId}`);
-          if (stateRes.ok) room.applyState(await stateRes.json());
-        } catch {
-          // The regular game-state poll will retry.
-        }
-      }, 0);
     } catch {
       setError('Failed to join room');
       setPhase('error');

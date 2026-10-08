@@ -28,7 +28,7 @@ describe('useOnlineRealtime', () => {
     MockWebSocket.instances = [];
   });
 
-  it('refreshes state after connecting and when a room update arrives', () => {
+  it('applies state delivered through the socket', () => {
     vi.stubGlobal('WebSocket', MockWebSocket);
     const onRoomUpdated = vi.fn();
     renderHook(() => useOnlineRealtime('ABC123', 'p1', true, onRoomUpdated));
@@ -37,10 +37,10 @@ describe('useOnlineRealtime', () => {
     expect(socket.url).toContain('/api/online/realtime?roomId=ABC123&playerId=p1');
 
     act(() => socket.emit('open'));
-    act(() => socket.emit('message', JSON.stringify({ type: 'room-updated' })));
+    act(() => socket.emit('message', JSON.stringify({ type: 'state', state: { currentPlayer: 'O' } })));
     act(() => socket.emit('message', 'not-json'));
 
-    expect(onRoomUpdated).toHaveBeenCalledTimes(2);
+    expect(onRoomUpdated).toHaveBeenCalledWith({ currentPlayer: 'O' });
   });
 
   it('does not open a socket while disabled', () => {

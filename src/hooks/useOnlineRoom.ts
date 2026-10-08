@@ -28,6 +28,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
 
   const pendingMoveRef = useRef<{ index: number; player: Player } | null>(null);
   const moveConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const realtimeSendRef = useRef<((message: Record<string, unknown>) => boolean) | null>(null);
 
   const applyState = useCallback((data: Record<string, unknown>, skipConnectedStatus = false) => {
     const serverBoard = data.board as BoardState;
@@ -185,57 +186,52 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       }
     }, MOVE_CONFIRM_TIMEOUT_MS);
 
+    if (realtimeSendRef.current) {
+      if (!realtimeSendRef.current({ type: 'move', index })) {
+        pendingMoveRef.current = null;
+        setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
+      }
+      return;
+    }
     try {
       const res = await fetchWithRetry('/api/online/room/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, playerId, index }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId, playerId, index }),
       });
       if (res.ok) {
         const data = await res.json();
-        setCurrentPlayer(data.currentPlayer);
-        setWinner(data.winner);
-        pendingMoveRef.current = null;
+        setCurrentPlayer(data.currentPlayer); setWinner(data.winner); pendingMoveRef.current = null;
       } else {
-        pendingMoveRef.current = null;
-        setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
+        pendingMoveRef.current = null; setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
       }
     } catch {
       pendingMoveRef.current = null;
       setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
-    } finally {
-      if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current);
-      moveConfirmTimeoutRef.current = null;
-    }
+    } finally { if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current); moveConfirmTimeoutRef.current = null; }
   }, [yourRole, currentPlayer, roomId, playerId]);
 
   const restart = useCallback(async (currentRole: Player | null) => {
     if (!roomId || !playerId) return false;
+    if (realtimeSendRef.current) {
+      if (realtimeSendRef.current({ type: 'restart' })) setRestartRequestedBy(currentRole);
+      return false;
+    }
     try {
       const res = await fetchWithRetry('/api/online/room/restart', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId, playerId }),
+        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId, playerId }),
       });
       if (res.ok) {
         const data = await res.json();
-        if (data.waitingForOpponent) {
-          setRestartRequestedBy(currentRole);
-          return false;
-        } else {
-          setSquares(Array(9).fill(null));
-          setCurrentPlayer('X');
-          setWinner(null);
-          setRestartRequestedBy(null);
-          pendingMoveRef.current = null;
-          return true;
-        }
+        if (data.waitingForOpponent) { setRestartRequestedBy(currentRole); return false; }
+        setSquares(Array(9).fill(null)); setCurrentPlayer('X'); setWinner(null); setRestartRequestedBy(null); pendingMoveRef.current = null;
+        return true;
       }
-    } catch {
-      // Retry on next action
-    }
+    } catch { /* WebSocket session supplies retry/reconnect; legacy HTTP callers may retry. */ }
     return false;
   }, [roomId, playerId]);
+
+  const setRealtimeSend = useCallback((send: ((message: Record<string, unknown>) => boolean) | null) => {
+    realtimeSendRef.current = send;
+  }, []);
 
   const setInitialRoomState = useCallback((role: Player, nickname: string, fetchedState?: Record<string, unknown>) => {
     setYourRole(role);
@@ -262,6 +258,6 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     yourRole, yourNickname, opponentNickname, restartRequestedBy, createdAt,
     connectionStatus,
     fetchState, pollGameState, pollLobby, applyState,
-    makeMove, restart, setInitialRoomState, resetRoom,
+    makeMove, restart, setInitialRoomState, resetRoom, setRealtimeSend,
   };
 };
