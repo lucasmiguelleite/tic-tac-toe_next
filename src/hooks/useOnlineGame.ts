@@ -7,6 +7,7 @@ import { useOnlineRoom } from './useOnlineRoom';
 import { useOnlineQueue } from './useOnlineQueue';
 import { useOnlineConnection } from './useOnlineConnection';
 import { useOnlineRealtime } from './useOnlineRealtime';
+import { useOnlineQueueRealtime } from './useOnlineQueueRealtime';
 
 export const useOnlineGame = (nickname?: string) => {
   const [phase, setPhase] = useState<OnlinePhase>('select-mode');
@@ -33,15 +34,9 @@ export const useOnlineGame = (nickname?: string) => {
     return () => room.setRealtimeSend(null);
   }, [room.setRealtimeSend, realtimeSend]);
 
-  // Poll queue
-  useEffect(() => {
-    if (phase !== 'in-queue' || !queue.queueId) return;
-    return queue.pollQueue(
-      queue.queueId,
-      (rId, pId, role) => { setRoomId(rId); setPlayerId(pId); room.setInitialRoomState(role, nickname || ''); setPhase('matched'); },
-      () => { setError('Queue timed out. Please try again.'); setPhase('error'); },
-    );
-  }, [phase, queue.queueId, queue.pollQueue, room.setInitialRoomState, nickname]);
+  useOnlineQueueRealtime(queue.queueId, phase === 'in-queue', (rId, pId, role) => {
+    setRoomId(rId); setPlayerId(pId); room.setInitialRoomState(role, nickname || ''); setPhase('matched');
+  });
 
   // Matched → playing transition; the socket delivers the initial state.
   useEffect(() => {

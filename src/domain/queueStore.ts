@@ -2,6 +2,7 @@ import { QueueEntry } from './types';
 import { generateId } from './utils';
 import { createRoom, joinRoom } from './roomStore';
 import { clearKeys, deleteValue, getKeys, getValue, setIfNotExists, setValue } from './onlineStorage';
+import { publishQueueUpdated } from './onlineEvents';
 
 export const QUEUE_TTL_MS = 2 * 60 * 1000;
 const QUEUE_TTL_SECONDS = QUEUE_TTL_MS / 1000;
@@ -59,6 +60,12 @@ const processNextMatch = async () => {
 
   await setValue(first.key, first.entry, QUEUE_TTL_SECONDS);
   await setValue(second.key, second.entry, QUEUE_TTL_SECONDS);
+  await Promise.all([publishQueueUpdated(first.entry.queueId), publishQueueUpdated(second.entry.queueId)]);
+};
+
+export const getQueueStatus = async (queueId: string) => {
+  const entry = await getValue<QueueEntry>(queueKey(queueId));
+  return entry ? { matched: entry.matched, matchResult: entry.matchResult } : null;
 };
 
 const matchQueuedEntry = async (queueId: string) => {

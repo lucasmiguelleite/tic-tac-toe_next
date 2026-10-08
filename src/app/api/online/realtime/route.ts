@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { experimental_upgradeWebSocket } from '@vercel/functions';
-import { getRoom } from '@/domain/onlineStore';
-import { getRoomEventChannel } from '@/domain/onlineEvents';
+import { getQueueStatus, getRoom } from '@/domain/onlineStore';
+import { getQueueEventChannel, getRoomEventChannel } from '@/domain/onlineEvents';
 import { subscribe } from '@/domain/onlineStorage';
 import { getOnlineRoomState, moveOnlineGame, restartOnlineGame } from '@/domain/onlineGame';
 
@@ -12,6 +12,22 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const roomId = searchParams.get('roomId');
   const playerId = searchParams.get('playerId');
+  const queueId = searchParams.get('queueId');
+
+  if (queueId && !roomId && !playerId) {
+    if (!await getQueueStatus(queueId)) return NextResponse.json({ error: 'Queue entry not found' }, { status: 404 });
+    return experimental_upgradeWebSocket((socket) => {
+      const sendQueue = async () => {
+        const queue = await getQueueStatus(queueId);
+        if (queue && socket.readyState === socket.OPEN) socket.send(JSON.stringify({ type: 'queue', queue }));
+      };
+      const unsubscribe = subscribe(getQueueEventChannel(queueId), () => { void sendQueue(); });
+      void sendQueue();
+      socket.on('close', unsubscribe);
+      socket.on('error', unsubscribe);
+    });
+  }
+
   if (!roomId || !playerId) {
     return NextResponse.json({ error: 'roomId and playerId are required' }, { status: 400 });
   }

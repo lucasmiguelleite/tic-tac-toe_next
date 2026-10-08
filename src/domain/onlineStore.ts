@@ -1,5 +1,5 @@
 export { createRoom, joinRoom, getRoom, updateRoom, disconnectPlayer, updatePlayerSeen, getOpponentSeen } from './roomStore';
-export { enterQueue, pollQueue, exitQueue } from './queueStore';
+export { enterQueue, pollQueue, getQueueStatus, exitQueue } from './queueStore';
 
 import { clearRooms, cleanupRooms } from './roomStore';
 import { clearQueue, cleanupQueue } from './queueStore';
