@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getRoom, updateRoom } from '@/domain/onlineStore';
 import { BoardState } from '@/domain/types';
+import { publishRoomUpdated } from '@/domain/onlineEvents';
 
 export async function POST(request: Request) {
   const { roomId, playerId } = await request.json();
@@ -21,6 +22,7 @@ export async function POST(request: Request) {
 
   if (!room.restartRequestedBy) {
     await updateRoom(roomId, { restartRequestedBy: playerRole });
+    await publishRoomUpdated(roomId);
     return NextResponse.json({
       board: room.board,
       currentPlayer: room.currentPlayer,
@@ -51,6 +53,7 @@ export async function POST(request: Request) {
     nicknameO: newNicknameO,
     restartRequestedBy: null,
   });
+  await publishRoomUpdated(roomId);
 
   return NextResponse.json({
     board: Array(9).fill(null),

@@ -13,6 +13,7 @@ vi.mock('@/domain/onlineStore', () => ({
 
 vi.mock('@/domain/onlineStorage', () => ({
   setValue: vi.fn(),
+  publish: vi.fn(),
 }));
 
 vi.mock('@/domain/roomStore', () => ({
@@ -34,6 +35,7 @@ import { POST as restart } from '@/app/api/online/room/restart/route';
 import { POST as disconnect } from '@/app/api/online/room/disconnect/route';
 import * as store from '@/domain/onlineStore';
 import * as engine from '@/domain/gameEngine';
+import * as storage from '@/domain/onlineStorage';
 
 const makeRoom = (overrides: Partial<Room> = {}): Room => ({
   roomId: 'ABC123',
@@ -96,6 +98,10 @@ describe('POST /api/online/room/join', () => {
       playerId: 'p2', playerRole: 'O', nickname: 'Bob',
     });
     expect(store.joinRoom).toHaveBeenCalledWith('ABC123', 'Bob');
+    expect(storage.publish).toHaveBeenCalledWith(
+      'tic-tac-toe:room-events:ABC123',
+      JSON.stringify({ type: 'room-updated' }),
+    );
   });
 
   it('returns 400 if roomId is missing', async () => {
@@ -258,6 +264,10 @@ describe('POST /api/online/room/move', () => {
     expect(data.currentPlayer).toBe('O');
     expect(data.winner).toBeNull();
     expect(store.updateRoom).toHaveBeenCalled();
+    expect(storage.publish).toHaveBeenCalledWith(
+      'tic-tac-toe:room-events:ABC123',
+      JSON.stringify({ type: 'room-updated' }),
+    );
   });
 
   it('detects win and sets winner', async () => {

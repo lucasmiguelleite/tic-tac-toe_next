@@ -6,6 +6,7 @@ import { fetchWithRetry } from '@/utils/fetchWithRetry';
 import { useOnlineRoom } from './useOnlineRoom';
 import { useOnlineQueue } from './useOnlineQueue';
 import { useOnlineConnection } from './useOnlineConnection';
+import { useOnlineRealtime } from './useOnlineRealtime';
 
 export const useOnlineGame = (nickname?: string) => {
   const [phase, setPhase] = useState<OnlinePhase>('select-mode');
@@ -16,6 +17,15 @@ export const useOnlineGame = (nickname?: string) => {
   const room = useOnlineRoom(roomId, playerId);
   const queue = useOnlineQueue();
   const { disconnect } = useOnlineConnection(roomId, playerId);
+
+  // Push events refresh state immediately; polling remains the recovery path
+  // for a dropped or unsupported WebSocket connection.
+  useOnlineRealtime(
+    roomId,
+    playerId,
+    phase === 'lobby' || phase === 'playing',
+    room.fetchState,
+  );
 
   // Poll game state when playing
   useEffect(() => {

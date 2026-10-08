@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { joinRoom } from '@/domain/onlineStore';
+import { publishRoomUpdated } from '@/domain/onlineEvents';
 
 export async function POST(request: Request) {
   const { roomId, nickname } = await request.json();
@@ -10,5 +11,6 @@ export async function POST(request: Request) {
   if (!result.ok) {
     return NextResponse.json({ error: result.error }, { status: result.status });
   }
+  await publishRoomUpdated(roomId.toUpperCase().trim());
   return NextResponse.json({ playerId: result.playerId, playerRole: result.playerRole, nickname: result.nickname });
 }
