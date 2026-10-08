@@ -35,16 +35,20 @@ src/
 │   ├── utils.ts           # Utilitários compartilhados (generateId)
 │   ├── roomStore.ts       # Gerenciamento de salas
 │   ├── queueStore.ts      # Fila de matchmaking
-│   ├── onlineStorage.ts   # Adapter Redis/Upstash com fallback local em memória
-│   └── onlineStore.ts     # Re-export dos stores acima
+│   ├── onlineStorage.ts   # Redis/Upstash, memória local e Pub/Sub
+│   ├── onlineEvents.ts    # Canais e eventos de invalidação em tempo real
+│   ├── onlineGame.ts      # Casos de uso online (estado, jogada, restart)
+│   └── onlineStore.ts     # Re-export dos stores de sala e fila
 │
 ├── hooks/                 # Estado e lógica de UI
 │   ├── useGameState.ts            # Tabuleiro local (2 jogadores)
 │   ├── useSinglePlayerGame.ts     # Modo vs IA
 │   ├── useOnlineGame.ts           # Orquestrador online (máquina de estados)
-│   ├── useOnlineRoom.ts           # Estado da sala, polling, movimentos
-│   ├── useOnlineQueue.ts          # Fila de matchmaking
+│   ├── useOnlineRoom.ts           # Estado da sala, polling de fallback e movimentos
+│   ├── useOnlineQueue.ts          # Fila de matchmaking e polling de fallback
 │   ├── useOnlineConnection.ts     # Disconnect via sendBeacon
+│   ├── useOnlineRealtime.ts       # WebSocket da sala
+│   ├── useOnlineQueueRealtime.ts  # WebSocket da fila
 │   └── useGameSounds.ts           # Sons de jogada e resultado
 │
 ├── components/            # UI stateless
@@ -54,12 +58,14 @@ src/
 │   ├── OnlineGameActions.tsx / OnlineLobby.tsx
 │   ├── OnlineQueue.tsx / OnlineMatchmaking.tsx
 │   ├── SettingsBar.tsx / Footer.tsx / Home.tsx
+│   └── ClickSoundProvider.tsx     # Som global de interação
 │
 ├── context/
 │   └── SettingsContext.tsx         # Tema + idioma + som + estilo do tabuleiro
 │
 ├── utils/
-│   └── sounds.ts                  # Sons sintetizados (Web Audio API)
+│   ├── sounds.ts                  # Sons sintetizados (Web Audio API)
+│   └── fetchWithRetry.ts          # Requisições online com retry
 │
 ├── i18n/
 │   └── translations.ts            # Dicionário EN / PT-BR
@@ -69,11 +75,13 @@ src/
 │   ├── single-player/              # vs IA
 │   ├── two-players-local/          # Local 2P
 │   ├── online/                     # Multiplayer online
-│   └── api/online/                 # API routes
+│   ├── manifest.ts / robots.ts / sitemap.ts
+│   ├── structured-data.tsx / opengraph-image.tsx / icon.tsx
+│   └── api/online/                 # REST e WebSocket
 │       ├── room/ (create, join, state, move, restart, disconnect)
 │       └── queue/ (enter, poll, exit)
 │
-└── __tests__/             # 165 testes
+└── __tests__/             # 19 arquivos / 183 testes
     ├── gameEngine.test.ts          # Regras do jogo
     ├── ai.test.ts                  # IA e strategy pattern
     ├── onlineStore.test.ts         # Stores de sala e fila
@@ -90,6 +98,9 @@ src/
     ├── useOnlineRoom.test.ts       # Estado da sala
     ├── useOnlineQueue.test.ts      # Fila de matchmaking
     └── useOnlineConnection.test.ts # Disconnect
+    ├── useOnlineRealtime.test.ts   # WebSocket de sala
+    ├── useOnlineQueueRealtime.test.ts # WebSocket de fila
+    └── onlineStorage.test.ts       # Storage e Pub/Sub
 ```
 
 ### Princípios
@@ -138,7 +149,7 @@ bun run build
 
 ## Testes
 
-165 testes cobrindo domain, hooks, context, utils e integração de API:
+183 testes, em 19 arquivos, cobrindo domain, hooks, context, utils e integração de API:
 
 ```bash
 bun run test           # roda todos os testes
