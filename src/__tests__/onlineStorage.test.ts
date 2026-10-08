@@ -114,4 +114,22 @@ describe('onlineStorage env resolution', () => {
     expect(constructorMock).not.toHaveBeenCalled();
     expect(value).toBe('memory');
   });
+
+  it('delivers in-memory realtime messages and removes unsubscribed listeners', async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+
+    const storage = await import('@/domain/onlineStorage');
+    const listener = vi.fn();
+    const unsubscribe = storage.subscribe('room:ABC123', listener);
+
+    await storage.publish('room:ABC123', 'updated');
+    unsubscribe();
+    await storage.publish('room:ABC123', 'ignored');
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledWith('updated');
+  });
 });

@@ -105,11 +105,13 @@ src/
 
 ### Online Multiplayer
 
-Sincronização baseada em polling (adequado para serverless/Vercel):
+Sincronização híbrida, adequada para serverless/Vercel:
 
-- **1s** polling de estado do jogo
+- **WebSocket por sala** para atualizar jogadas, entrada do oponente, restart e disconnect imediatamente
+- **Polling de fallback** (1s/2s) para recuperar estado após uma conexão WebSocket cair ou expirar
 - **2s** polling de lobby e fila
 - **Redis/Upstash** para persistir salas e fila entre invocações serverless
+- **Redis Pub/Sub** para propagar eventos entre instâncias da Vercel
 - **sendBeacon** para disconnect instantâneo ao fechar aba/navegador
 - **Optimistic updates** para movimentos (sem latência percebida)
 - **Votação de restart** — ambos os jogadores devem confirmar para reiniciar

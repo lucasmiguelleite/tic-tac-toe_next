@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getRoom, updateRoom, updatePlayerSeen } from '@/domain/onlineStore';
 import { makeMove, calculateWinner, checkDraw } from '@/domain/gameEngine';
+import { publishRoomUpdated } from '@/domain/onlineEvents';
 
 export async function POST(request: Request) {
   const { roomId, playerId, index } = await request.json();
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
 
   // Update lastSeen via separate key — avoid modifying room for presence tracking
   await updatePlayerSeen(roomId, playerId, room.playerX, room.playerO);
+  await publishRoomUpdated(roomId);
 
   return NextResponse.json({
     board: newBoard,
