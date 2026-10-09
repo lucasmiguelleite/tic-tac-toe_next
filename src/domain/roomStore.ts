@@ -1,6 +1,6 @@
 import { BoardState, Player, Room } from './types';
 import { generateId } from './utils';
-import { clearKeys, deleteValue, getKeys, getValue, setValue } from './onlineStorage';
+import { clearKeys, deleteValue, getKeys, getValue, setIfNotExists, setValue } from './onlineStorage';
 
 const ROOM_CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
 const ROOM_CODE_LENGTH = 6;
@@ -15,8 +15,15 @@ export const roomKey = (roomId: string) => `${ROOM_KEY_PREFIX}${roomId}`;
 // Separate lastSeen keys to avoid read-modify-write race on room object
 const SEEN_KEY_PREFIX = 'tic-tac-toe:seen:';
 const SEEN_TTL_SECONDS = 30;
+const ROOM_LOCK_TTL_SECONDS = 5;
 
 const seenKey = (roomId: string, role: Player) => `${SEEN_KEY_PREFIX}${roomId}:${role}`;
+const roomLockKey = (roomId: string) => `tic-tac-toe:room-lock:${roomId}`;
+
+const withRoomLock = async <T>(roomId: string, callback: () => Promise<T>, fallback: T): Promise<T> => {
+  if (!await setIfNotExists(roomLockKey(roomId), '1', ROOM_LOCK_TTL_SECONDS)) return fallback;
+  try { return await callback(); } finally { await deleteValue(roomLockKey(roomId)); }
+};
 
 export const updatePlayerSeen = async (roomId: string, playerId: string, playerX: string | null, playerO: string | null) => {
   const role = playerX === playerId ? 'X' : playerO === playerId ? 'O' : null;
@@ -68,20 +75,22 @@ export const createRoom = async (nickname?: string) => {
 };
 
 export const joinRoom = async (roomId: string, nickname?: string) => {
-  const room = await getRoom(roomId);
-  if (!room) return { ok: false as const, error: 'Room not found', status: 404 };
-  if (room.status !== 'waiting') return { ok: false as const, error: 'Room is full', status: 409 };
+  return withRoomLock(roomId, async () => {
+    const room = await getRoom(roomId);
+    if (!room) return { ok: false as const, error: 'Room not found', status: 404 };
+    if (room.status !== 'waiting') return { ok: false as const, error: 'Room is full', status: 409 };
 
-  const playerId = generateId();
-  const name = nickname?.trim() || `player-${playerId}`;
-  const now = Date.now();
-  room.playerO = playerId;
-  room.nicknameO = name;
-  room.status = 'playing';
-  room.lastSeenO = now;
-  await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
-  await setValue(seenKey(roomId, 'O'), now, SEEN_TTL_SECONDS);
-  return { ok: true as const, playerId, playerRole: 'O' as Player, nickname: name };
+    const playerId = generateId();
+    const name = nickname?.trim() || `player-${playerId}`;
+    const now = Date.now();
+    room.playerO = playerId;
+    room.nicknameO = name;
+    room.status = 'playing';
+    room.lastSeenO = now;
+    await setValue(roomKey(roomId), room, ROOM_TTL_SECONDS);
+    await setValue(seenKey(roomId, 'O'), now, SEEN_TTL_SECONDS);
+    return { ok: true as const, playerId, playerRole: 'O' as Player, nickname: name };
+  }, { ok: false as const, error: 'Room is being joined', status: 409 });
 };
 
 export const getRoom = async (roomId: string): Promise<Room | undefined> => {
