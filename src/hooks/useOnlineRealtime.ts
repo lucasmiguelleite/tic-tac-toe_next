@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { OnlineRoomState, RoomClientMessage, RoomServerMessage } from '@/domain/types';
-import { useReconnectableWebSocket } from './useReconnectableWebSocket';
+import { onlineRealtimeUrl, useReconnectableWebSocket } from './useReconnectableWebSocket';
 
 export const useOnlineRealtime = (
   roomId: string | null,
@@ -10,8 +10,7 @@ export const useOnlineRealtime = (
   enabled: boolean,
   onState: (state: OnlineRoomState) => void,
 ) => {
-  const url = useMemo(() => roomId && playerId && typeof window !== 'undefined'
-    ? `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/api/online/realtime?${new URLSearchParams({ roomId, playerId })}` : null, [roomId, playerId]);
+  const url = useMemo(() => roomId && playerId ? onlineRealtimeUrl({ roomId, playerId }) : null, [roomId, playerId]);
   return useReconnectableWebSocket<RoomServerMessage, RoomClientMessage>(url, enabled, (message) => {
     if (message.type === 'state') onState(message.state);
   });

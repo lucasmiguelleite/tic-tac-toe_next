@@ -5,6 +5,12 @@ import { useCallback, useEffect, useRef } from 'react';
 const INITIAL_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 30000;
 
+export const onlineRealtimeUrl = (params: Record<string, string>): string | null => {
+  if (typeof window === 'undefined') return null;
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  return `${protocol}//${window.location.host}/api/online/realtime?${new URLSearchParams(params)}`;
+};
+
 /** Shared WebSocket transport with exponential reconnect and latest callback. */
 export const useReconnectableWebSocket = <TIncoming, TOutgoing>(url: string | null, enabled: boolean, onMessage: (message: TIncoming) => void) => {
   const socketRef = useRef<WebSocket | null>(null);
