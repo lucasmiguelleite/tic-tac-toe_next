@@ -126,6 +126,18 @@ describe('useOnlineRoom', () => {
     expect(result.current.opponentNickname).toBe('');
   });
 
+  it('cancels an optimistic move timeout when the room is reset', async () => {
+    vi.spyOn(global, 'fetch').mockReturnValueOnce(new Promise(() => {}) as Promise<Response>);
+    const { result } = renderHook(() => useOnlineRoom('ABC123', 'p1'));
+    act(() => result.current.setInitialRoomState('X', 'Alice'));
+    act(() => { void result.current.makeMove(0); });
+    expect(result.current.squares[0]).toBe('X');
+
+    act(() => result.current.resetRoom());
+    await act(async () => { await vi.advanceTimersByTimeAsync(6000); });
+    expect(result.current.squares).toEqual(Array(9).fill(null));
+  });
+
   it('pollGameState calls onDisconnect after 3 consecutive opponentConnected false', async () => {
     const onDisconnect = vi.fn();
     const onExpired = vi.fn();
