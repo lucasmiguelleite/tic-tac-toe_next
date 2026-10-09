@@ -2,77 +2,16 @@
 
 Jogo da velha (tic-tac-toe) multiplayer construído com Next.js 16 (App Router), TypeScript, Tailwind CSS e Vitest.
 
-## Arquitetura
+## Arquitetura essencial
 
-```
-src/
-├── domain/          # Lógica de negócio pura (zero React)
-│   ├── types.ts         # Tipos centrais (Player, BoardState, Room, OnlinePhase, etc.)
-│   ├── gameEngine.ts    # calculateWinner, checkDraw, makeMove (imutável)
-│   ├── ai.ts            # bestMove com strategy pattern por dificuldade
-│   ├── boardStyles.ts   # Registry de estilos de tabuleiro (OCP)
-│   ├── utils.ts         # generateId (compartilhado entre stores)
-│   ├── roomStore.ts     # CRUD de salas, disconnect e cleanup
-│   ├── queueStore.ts    # Fila de matchmaking, polling de fallback e timeout
-│   ├── onlineStorage.ts # Redis/Upstash, memória local/testes e Pub/Sub
-│   ├── onlineEvents.ts  # Canais e publicação de eventos de sala/fila
-│   ├── onlineGame.ts    # Casos de uso online; regras e autorização do servidor
-│   └── onlineStore.ts   # Re-export thin de roomStore + queueStore
-├── hooks/           # Estado e lógica de UI (React hooks)
-│   ├── useGameState.ts          # Tabuleiro local (2 jogadores)
-│   ├── useSinglePlayerGame.ts   # vs IA (seleção de dificuldade + jogador)
-│   ├── useOnlineGame.ts         # Orquestrador online (phase machine)
-│   ├── useOnlineRoom.ts         # Estado da sala, polling de fallback e movimentos
-│   ├── useOnlineQueue.ts        # Fila, callbacks e polling de fallback
-│   ├── useOnlineConnection.ts   # sendBeacon disconnect
-│   ├── useOnlineRealtime.ts     # WebSocket de sala, reconexão exponencial
-│   ├── useOnlineQueueRealtime.ts # WebSocket de fila, reconexão exponencial
-│   └── useGameSounds.ts         # Sons de jogada e resultado (compartilhado)
-├── components/      # UI stateless (recebem props, não gerenciam estado)
-│   ├── Board.tsx / Square.tsx
-│   ├── BoardStyleSelector.tsx   # Seletor visual de estilos
-│   ├── GameStatus.tsx / GameActions.tsx
-│   ├── DifficultySelect.tsx / PlayerSelect.tsx
-│   ├── OnlineGameActions.tsx / OnlineLobby.tsx / OnlineQueue.tsx / OnlineMatchmaking.tsx
-│   ├── SettingsBar.tsx / Footer.tsx / Home.tsx / ClickSoundProvider.tsx
-├── context/
-│   └── SettingsContext.tsx   # Tema, idioma, som, estilo do tabuleiro (Context + localStorage)
-├── utils/
-│   ├── sounds.ts             # Sons sintetizados via Web Audio API com cache em memória
-│   └── fetchWithRetry.ts     # Fetch online com retry
-├── i18n/
-│   └── translations.ts      # Dicionário en/pt com interpolação {param}
-├── app/             # Next.js App Router
-│   ├── page.tsx                 # Home
-│   ├── single-player/           # vs IA
-│   ├── two-players-local/       # Local 2P
-│   ├── online/                  # Multiplayer online
-│   ├── manifest.ts / robots.ts / sitemap.ts # PWA/SEO
-│   ├── structured-data.tsx / opengraph-image.tsx / icon.tsx # Metadados visuais
-│   └── api/online/              # API REST + endpoint WebSocket
-│       ├── room/{create,join,state,move,restart,disconnect}
-│       └── queue/{enter,poll,exit}
-└── __tests__/       # Vitest (jsdom environment; 19 arquivos / 185 testes)
-    ├── gameEngine.test.ts          # Regras puras do jogo
-    ├── ai.test.ts                  # IA e strategy pattern
-    ├── onlineStore.test.ts         # Stores de sala e fila
-    ├── onlineStorage.test.ts       # Storage e Pub/Sub
-    ├── api.room.test.ts            # Testes de integração API room
-    ├── api.queue.test.ts           # Testes de integração API queue
-    ├── board.test.ts               # Registry + cellCenter + extend
-    ├── translations.test.ts        # translate(), interpolação, fallback
-    ├── sounds.test.ts              # Gate logic (isEnabled, cache)
-    ├── useSettings.test.tsx        # SettingsContext (tema, locale, som, boardStyle)
-    ├── useGameSounds.test.ts       # Hook de sons (win/lose/draw/move)
-    ├── useGameState.test.ts        # Tabuleiro local
-    ├── useSinglePlayerGame.test.ts # Modo vs IA
-    ├── useOnlineGame.test.ts       # Orquestrador online
-    ├── useOnlineRoom.test.ts       # Estado da sala, fallback e restart
-    ├── useOnlineQueue.test.ts      # Fila, fallback e exit
-    ├── useOnlineRealtime.test.ts   # WebSocket de sala
-    ├── useOnlineQueueRealtime.test.ts # WebSocket de fila
-    └── useOnlineConnection.test.ts # sendBeacon disconnect
-```
+- `domain/`: regras puras, tipos, stores online e casos de uso do servidor. Nunca importar React aqui.
+- `hooks/`: estado e orquestração da UI. Cada modo de jogo possui um hook dedicado.
+- `components/`: apresentação stateless; recebem props e emitem callbacks.
+- `app/`: rotas App Router e wrappers finos de API. Rotas online delegam para `domain/`.
+- `context/`, `i18n/` e `utils/`: configurações de UI, traduções e infraestrutura compartilhada.
+- `__tests__/`: Vitest/jsdom. Mudanças em domain ou hooks exigem testes correspondentes.
+
+Consulte o `README.md` para o inventário completo de arquivos, funcionalidades e cobertura atual.
 
 ## Princípios SOLID seguidos
 
