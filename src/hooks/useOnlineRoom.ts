@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { BoardState, ConnectionStatus, GameResult, Player, RoomClientMessage } from '@/domain/types';
+import { BoardState, ConnectionStatus, GameResult, OnlineRoomState, Player, RoomClientMessage } from '@/domain/types';
 import { onlineApi } from '@/utils/onlineApi';
 
 const ACTIVE_TURN_POLL_MS = 1000;
@@ -38,30 +38,32 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
 
   useEffect(() => clearPendingMove, [roomId, playerId, clearPendingMove]);
 
-  const applyState = useCallback((data: Record<string, unknown>, skipConnectedStatus = false) => {
-    const serverBoard = data.board as BoardState;
+  const applyState = useCallback((data: Partial<OnlineRoomState>, skipConnectedStatus = false) => {
+    const serverBoard = data.board;
     const pm = pendingMoveRef.current;
 
-    if (pm && serverBoard[pm.index] === pm.player) {
+    if (pm && serverBoard?.[pm.index] === pm.player) {
       pendingMoveRef.current = null;
     }
 
-    setSquares(() => {
-      if (pm && serverBoard[pm.index] !== pm.player) {
-        const merged = [...serverBoard];
-        merged[pm.index] = pm.player;
-        return merged;
-      }
-      return serverBoard;
-    });
-    setCurrentPlayer(data.currentPlayer as Player);
-    setWinner(data.winner as GameResult);
-    if (!skipConnectedStatus) setOpponentConnected(data.opponentConnected as boolean);
-    if (data.yourRole) setYourRole(data.yourRole as Player);
-    if (data.yourNickname) setYourNickname(data.yourNickname as string);
-    if (data.opponentNickname) setOpponentNickname(data.opponentNickname as string);
-    setRestartRequestedBy((data.restartRequestedBy as Player) || null);
-    if (data.createdAt) setCreatedAt((prev) => prev ?? (data.createdAt as number));
+    if (serverBoard) {
+      setSquares(() => {
+        if (pm && serverBoard[pm.index] !== pm.player) {
+          const merged = [...serverBoard];
+          merged[pm.index] = pm.player;
+          return merged;
+        }
+        return serverBoard;
+      });
+    }
+    if (data.currentPlayer) setCurrentPlayer(data.currentPlayer);
+    if (data.winner !== undefined) setWinner(data.winner);
+    if (!skipConnectedStatus && data.opponentConnected !== undefined) setOpponentConnected(data.opponentConnected);
+    if (data.yourRole) setYourRole(data.yourRole);
+    if (data.yourNickname !== undefined) setYourNickname(data.yourNickname);
+    if (data.opponentNickname !== undefined) setOpponentNickname(data.opponentNickname);
+    if (data.restartRequestedBy !== undefined) setRestartRequestedBy(data.restartRequestedBy);
+    if (data.createdAt !== undefined) setCreatedAt((prev) => prev ?? data.createdAt!);
   }, []);
 
   const fetchState = useCallback(async () => {
@@ -92,12 +94,12 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       return Math.min(baseDelay * Math.pow(2, consecutiveErrors) + jitter, MAX_BACKOFF_MS);
     };
 
-    const nextPollDelay = (data?: Record<string, unknown>) => {
+    const nextPollDelay = (data?: Partial<OnlineRoomState>) => {
       if (typeof document !== 'undefined' && document.hidden) return BACKGROUND_POLL_MS;
       if (!data) return WAITING_TURN_POLL_MS;
 
-      const role = data.yourRole as Player | null;
-      const nextPlayer = data.currentPlayer as Player | null;
+      const role = data.yourRole;
+      const nextPlayer = data.currentPlayer;
       return role && nextPlayer && role === nextPlayer ? ACTIVE_TURN_POLL_MS : WAITING_TURN_POLL_MS;
     };
 
@@ -148,7 +150,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     };
   }, [roomId, playerId, applyState]);
 
-  const pollLobby = useCallback((onOpponentJoined: (data: Record<string, unknown>) => void) => {
+  const pollLobby = useCallback((onOpponentJoined: (data: OnlineRoomState) => void) => {
     if (!roomId || !playerId) return () => {};
     let active = true;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -233,7 +235,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     realtimeSendRef.current = send;
   }, []);
 
-  const setInitialRoomState = useCallback((role: Player, nickname: string, fetchedState?: Record<string, unknown>) => {
+  const setInitialRoomState = useCallback((role: Player, nickname: string, fetchedState?: Partial<OnlineRoomState>) => {
     setYourRole(role);
     setYourNickname(nickname);
     if (fetchedState) applyState(fetchedState);
