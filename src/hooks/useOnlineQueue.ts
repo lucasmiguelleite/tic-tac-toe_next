@@ -33,12 +33,11 @@ export const useOnlineQueue = () => {
     const poll = async () => {
       if (!active) return;
       try {
-        const res = await fetch(`/api/online/queue/poll?queueId=${id}`);
+        const { response: res, data } = await onlineApi.queueStatus(id);
         if (!active) return;
         consecutiveErrors = 0;
         if (res.status === 404) { onTimeout(); return; }
         if (res.ok) {
-          const data = await res.json();
           if (!active) return;
           if (data.matched && data.matchResult) {
             onMatch(data.matchResult.roomId, data.matchResult.playerId, data.matchResult.playerRole);

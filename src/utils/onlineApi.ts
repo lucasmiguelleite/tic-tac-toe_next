@@ -21,6 +21,7 @@ export const onlineApi = {
   createRoom: (nickname?: string) => post<CreateRoomResponse>('/api/online/room/create', { nickname }),
   joinRoom: (roomId: string, nickname?: string) => post<JoinRoomResponse>('/api/online/room/join', { roomId, nickname }),
   enterQueue: (nickname?: string) => post<QueueResponse>('/api/online/queue/enter', { nickname }),
+  queueStatus: (queueId: string) => json<Pick<QueueEntry, 'matched' | 'matchResult'>>(`/api/online/queue/poll?${new URLSearchParams({ queueId })}`),
   exitQueue: (queueId: string) => post<{ success: boolean }>('/api/online/queue/exit', { queueId }),
   roomState: (roomId: string, playerId: string) => json<OnlineRoomState>(`/api/online/room/state?${new URLSearchParams({ roomId, playerId })}`),
   move: (roomId: string, playerId: string, index: number) => post<MoveResponse>('/api/online/room/move', { roomId, playerId, index }),
