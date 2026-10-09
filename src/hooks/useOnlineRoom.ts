@@ -34,7 +34,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current);
     moveConfirmTimeoutRef.current = null;
     pendingMoveRef.current = null;
-  }, [clearPendingMove]);
+  }, []);
 
   useEffect(() => clearPendingMove, [roomId, playerId, clearPendingMove]);
 
@@ -62,7 +62,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     if (data.opponentNickname) setOpponentNickname(data.opponentNickname as string);
     setRestartRequestedBy((data.restartRequestedBy as Player) || null);
     if (data.createdAt) setCreatedAt((prev) => prev ?? (data.createdAt as number));
-  }, []);
+  }, [clearPendingMove]);
 
   const fetchState = useCallback(async () => {
     if (!roomId || !playerId) return;
