@@ -17,8 +17,6 @@ const SettingsBar = () => {
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
-  const allOff = !sound.movesEnabled && !sound.eventsEnabled && !sound.uiEnabled;
-
   return (
     <div ref={ref} className="fixed top-3 right-3 z-50">
       <button

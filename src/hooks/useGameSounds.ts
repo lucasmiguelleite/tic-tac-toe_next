@@ -19,7 +19,10 @@ export const useGameSounds = ({
   useEffect(() => {
     if (winner && winner !== prevWinnerRef.current) {
       if (winner === 'BOTH') playDraw();
-      else if (playerRole) winner === playerRole ? playWin() : playLose();
+      else if (playerRole) {
+        if (winner === playerRole) playWin();
+        else playLose();
+      }
       else playWin();
     }
     prevWinnerRef.current = winner;

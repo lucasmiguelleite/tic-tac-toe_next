@@ -53,7 +53,7 @@ const optimalMove = (board: BoardState, aiPlayer: Player, humanPlayer: Player): 
   return move;
 };
 
-const randomMove = (board: BoardState, aiPlayer: Player): number => {
+const randomMove = (board: BoardState, _aiPlayer: Player): number => {
   const available = board.reduce<number[]>((acc, cell, i) => {
     if (!cell) acc.push(i);
     return acc;
