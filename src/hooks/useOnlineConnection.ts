@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 
 export const useOnlineConnection = (roomId: string | null, playerId: string | null) => {
   useEffect(() => {
@@ -15,14 +15,14 @@ export const useOnlineConnection = (roomId: string | null, playerId: string | nu
     return () => window.removeEventListener('beforeunload', handleUnload);
   }, [roomId, playerId]);
 
-  const disconnect = () => {
+  const disconnect = useCallback(() => {
     if (roomId && playerId) {
       navigator.sendBeacon(
         '/api/online/room/disconnect',
         JSON.stringify({ roomId, playerId }),
       );
     }
-  };
+  }, [roomId, playerId]);
 
   return { disconnect };
 };
