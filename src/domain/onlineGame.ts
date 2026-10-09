@@ -1,5 +1,5 @@
 import { BoardState, OnlineRoomState, Player } from './types';
-import { calculateWinner, checkDraw, makeMove } from './gameEngine';
+import { calculateWinner, checkDraw, createEmptyBoard, makeMove, otherPlayer } from './gameEngine';
 import { disconnectPlayer, getOpponentSeen, getRoom, updatePlayerSeen, updateRoom, withRoomLock } from './onlineStore';
 import { publishRoomUpdated } from './onlineEvents';
 
@@ -45,7 +45,7 @@ export const moveOnlineGame = async (roomId: string, playerId: string, index: nu
   if (board === room.board) return { ok: false, status: 409, error: 'Cell already occupied' };
   const winner = calculateWinner(board);
   const result = winner || (checkDraw(board) ? 'BOTH' : null);
-  const currentPlayer = room.currentPlayer === 'X' ? 'O' : 'X';
+  const currentPlayer = otherPlayer(room.currentPlayer);
   await updateRoom(roomId, { board, currentPlayer, winner: result, status: result ? 'finished' : 'playing' });
   await updatePlayerSeen(roomId, playerId, room.playerX, room.playerO);
   await publishRoomUpdated(roomId);
@@ -66,12 +66,12 @@ export const restartOnlineGame = async (roomId: string, playerId: string): Promi
   }
   if (room.restartRequestedBy === role) return { ok: true, data: { waitingForOpponent: true } };
   await updateRoom(roomId, {
-    board: Array(9).fill(null) as BoardState, currentPlayer: 'X', winner: null, status: 'playing',
+    board: createEmptyBoard(), currentPlayer: 'X', winner: null, status: 'playing',
     playerX: room.playerO, playerO: room.playerX,
     nicknameX: room.nicknameO, nicknameO: room.nicknameX, restartRequestedBy: null,
   });
   await publishRoomUpdated(roomId);
-  return { ok: true, data: { waitingForOpponent: false, board: Array(9).fill(null) as BoardState, currentPlayer: 'X', winner: null } };
+  return { ok: true, data: { waitingForOpponent: false, board: createEmptyBoard(), currentPlayer: 'X', winner: null } };
   }, { ok: false, status: 409, error: 'Room is busy' });
 };
 

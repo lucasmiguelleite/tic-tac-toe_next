@@ -26,6 +26,8 @@ vi.mock('@/domain/gameEngine', () => ({
   makeMove: vi.fn(),
   calculateWinner: vi.fn(),
   checkDraw: vi.fn(),
+  createEmptyBoard: () => Array(9).fill(null),
+  otherPlayer: (player: 'X' | 'O') => player === 'X' ? 'O' : 'X',
 }));
 
 import { POST as createRoom } from '@/app/api/online/room/create/route';

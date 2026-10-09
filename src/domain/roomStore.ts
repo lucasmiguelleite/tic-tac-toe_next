@@ -1,4 +1,5 @@
-import { BoardState, Player, Room } from './types';
+import { Player, Room } from './types';
+import { createEmptyBoard, otherPlayer } from './gameEngine';
 import { generateId } from './utils';
 import { clearKeys, deleteValue, getKeys, getValue, setIfNotExists, setValue } from './onlineStorage';
 
@@ -32,7 +33,7 @@ export const updatePlayerSeen = async (roomId: string, playerId: string, playerX
 };
 
 export const getOpponentSeen = async (roomId: string, yourRole: Player): Promise<number | null> => {
-  const opponentRole = yourRole === 'X' ? 'O' : 'X';
+  const opponentRole = otherPlayer(yourRole);
   return getValue<number>(seenKey(roomId, opponentRole));
 };
 
@@ -55,7 +56,7 @@ export const createRoom = async (nickname?: string) => {
   const room: Room = {
     roomId,
     status: 'waiting',
-    board: Array(9).fill(null) as BoardState,
+    board: createEmptyBoard(),
     currentPlayer: 'X',
     winner: null,
     playerX: playerId,

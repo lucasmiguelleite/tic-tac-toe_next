@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateWinner, checkDraw, computeGameResult, makeMove } from '@/domain/gameEngine';
+import { calculateWinner, checkDraw, computeGameResult, createEmptyBoard, isValidMove, makeMove, otherPlayer } from '@/domain/gameEngine';
 import { BoardState } from '@/domain/types';
 
 describe('calculateWinner', () => {
@@ -116,5 +116,31 @@ describe('makeMove', () => {
     expect(result[0]).toBe('X');
     expect(result[1]).toBe('X');
     expect(result[2]).toBe('O');
+  });
+
+  it('returns the original board for an out-of-range index', () => {
+    const board = createEmptyBoard();
+    expect(makeMove(board, -1, 'X')).toBe(board);
+    expect(makeMove(board, 9, 'X')).toBe(board);
+  });
+});
+
+describe('board helpers', () => {
+  it('creates an independent empty board', () => {
+    const first = createEmptyBoard();
+    const second = createEmptyBoard();
+    first[0] = 'X';
+    expect(second).toEqual(Array(9).fill(null));
+  });
+
+  it('validates only empty in-range cells', () => {
+    expect(isValidMove(['X', null], 1)).toBe(true);
+    expect(isValidMove(['X', null], 0)).toBe(false);
+    expect(isValidMove(['X', null], 2)).toBe(false);
+  });
+
+  it('returns the opposing player', () => {
+    expect(otherPlayer('X')).toBe('O');
+    expect(otherPlayer('O')).toBe('X');
   });
 });

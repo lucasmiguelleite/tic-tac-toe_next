@@ -22,6 +22,18 @@ describe('useGameState', () => {
     act(() => result.current.makeMove(4));
     act(() => result.current.makeMove(4));
     expect(result.current.squares[4]).toBe('X');
+    expect(result.current.currentPlayer).toBe('O');
+  });
+
+  it('does not advance the turn for an invalid index or after the game ends', () => {
+    const { result } = renderHook(() => useGameState());
+    act(() => result.current.makeMove(-1));
+    expect(result.current.currentPlayer).toBe('X');
+
+    [0, 3, 1, 4, 2].forEach((move) => act(() => result.current.makeMove(move)));
+    act(() => result.current.makeMove(5));
+    expect(result.current.squares[5]).toBeNull();
+    expect(result.current.currentPlayer).toBe('O');
   });
 
   it('detects a win', () => {

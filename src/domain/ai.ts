@@ -68,7 +68,7 @@ const difficultyStrategies: Record<Difficulty, DifficultyStrategy> = {
   easy: (board, aiPlayer, _humanPlayer) =>
     Math.random() < 0.6 ? randomMove(board) : optimalMove(board, aiPlayer, _humanPlayer),
   medium: (board, aiPlayer, humanPlayer) =>
-    Math.random() < 0.3 ? randomMove(board, aiPlayer) : optimalMove(board, aiPlayer, humanPlayer),
+    Math.random() < 0.3 ? randomMove(board) : optimalMove(board, aiPlayer, humanPlayer),
   hard: (board, aiPlayer, humanPlayer) =>
     optimalMove(board, aiPlayer, humanPlayer),
 };

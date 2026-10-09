@@ -2,21 +2,22 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { BoardState, GameResult, Player } from '@/domain/types';
-import { makeMove as engineMakeMove, computeGameResult } from '@/domain/gameEngine';
+import { createEmptyBoard, isValidMove, makeMove as engineMakeMove, computeGameResult, otherPlayer } from '@/domain/gameEngine';
 
 export const useGameState = () => {
-  const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
+  const [squares, setSquares] = useState<BoardState>(createEmptyBoard);
   const [currentPlayer, setCurrentPlayer] = useState<Player>('X');
   // winner is derived from the board, not stored — avoids setState-in-effect.
   const winner = useMemo<GameResult>(() => computeGameResult(squares), [squares]);
 
   const makeMove = useCallback((index: number) => {
+    if (winner !== null || !isValidMove(squares, index)) return;
     setSquares((prev) => engineMakeMove(prev, index, currentPlayer));
-    setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
-  }, [currentPlayer]);
+    setCurrentPlayer(otherPlayer(currentPlayer));
+  }, [currentPlayer, squares, winner]);
 
   const restart = useCallback(() => {
-    setSquares(Array(9).fill(null));
+    setSquares(createEmptyBoard());
     setCurrentPlayer('X');
   }, []);
 

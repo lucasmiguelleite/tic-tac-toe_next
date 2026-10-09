@@ -1,10 +1,20 @@
 import { BoardState, GameResult, Player } from './types';
 
+export const BOARD_SIZE = 9;
+
 const WIN_LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],
   [0, 3, 6], [1, 4, 7], [2, 5, 8],
   [0, 4, 8], [2, 4, 6],
 ];
+
+/** Creates a new empty board so callers never share mutable board state. */
+export const createEmptyBoard = (): BoardState => Array(BOARD_SIZE).fill(null);
+
+export const otherPlayer = (player: Player): Player => player === 'X' ? 'O' : 'X';
+
+export const isValidMove = (squares: BoardState, index: number): boolean =>
+  Number.isInteger(index) && index >= 0 && index < squares.length && squares[index] === null;
 
 export const calculateWinner = (squares: BoardState): GameResult => {
   for (const [a, b, c] of WIN_LINES) {
@@ -38,6 +48,6 @@ export const computeGameResult = (squares: BoardState): GameResult => {
 };
 
 export const makeMove = (squares: BoardState, index: number, player: Player): BoardState => {
-  if (squares[index]) return squares;
+  if (!isValidMove(squares, index)) return squares;
   return squares.map((cell, i) => (i === index ? player : cell));
 };

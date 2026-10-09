@@ -2,11 +2,11 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { BoardState, Difficulty, GameResult, Player } from '@/domain/types';
-import { makeMove as engineMakeMove, computeGameResult } from '@/domain/gameEngine';
+import { createEmptyBoard, isValidMove, makeMove as engineMakeMove, computeGameResult, otherPlayer } from '@/domain/gameEngine';
 import { bestMove } from '@/domain/ai';
 
 export const useSinglePlayerGame = () => {
-  const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
+  const [squares, setSquares] = useState<BoardState>(createEmptyBoard);
   const [currentPlayer, setCurrentPlayer] = useState<Player>('X');
   const [player, setPlayer] = useState<Player>('X');
   const [aiPlayer, setAiPlayer] = useState<Player>('O');
@@ -27,19 +27,19 @@ export const useSinglePlayerGame = () => {
     if (move === -1) return;
     const timeout = setTimeout(() => {
       setSquares((prev) => engineMakeMove(prev, move, aiPlayer));
-      setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
+      setCurrentPlayer(otherPlayer(aiPlayer));
     }, 100);
     return () => clearTimeout(timeout);
   }, [squares, winner, aiPlayer, currentPlayer, player, difficulty, playerSelected]);
 
   const makeMove = useCallback((index: number) => {
-    if (currentPlayer !== player) return;
+    if (winner !== null || currentPlayer !== player || !isValidMove(squares, index)) return;
     setSquares((prev) => engineMakeMove(prev, index, currentPlayer));
-    setCurrentPlayer((p) => (p === 'X' ? 'O' : 'X'));
-  }, [currentPlayer, player]);
+    setCurrentPlayer(otherPlayer(currentPlayer));
+  }, [currentPlayer, player, squares, winner]);
 
   const restart = useCallback(() => {
-    setSquares(Array(9).fill(null));
+    setSquares(createEmptyBoard());
     setCurrentPlayer('X');
   }, []);
 
@@ -50,7 +50,7 @@ export const useSinglePlayerGame = () => {
 
   const selectPlayer = useCallback((p: Player) => {
     setPlayer(p);
-    setAiPlayer(p === 'X' ? 'O' : 'X');
+    setAiPlayer(otherPlayer(p));
     setPlayerSelected(true);
   }, []);
 

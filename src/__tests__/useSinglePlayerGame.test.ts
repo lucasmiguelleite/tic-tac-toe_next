@@ -41,6 +41,14 @@ describe('useSinglePlayerGame', () => {
     expect(result.current.squares[4]).toBeNull();
   });
 
+  it('does not advance the turn when the player selects an occupied cell', () => {
+    const { result } = renderHook(() => useSinglePlayerGame());
+    act(() => result.current.selectPlayer('X'));
+    act(() => result.current.makeMove(4));
+    act(() => result.current.makeMove(4));
+    expect(result.current.currentPlayer).toBe('O');
+  });
+
   it('restart resets the board', () => {
     const { result } = renderHook(() => useSinglePlayerGame());
     act(() => result.current.selectDifficulty('hard'));

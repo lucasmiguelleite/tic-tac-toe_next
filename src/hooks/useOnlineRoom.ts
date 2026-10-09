@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { BoardState, ConnectionStatus, GameResult, OnlineRoomState, Player, RoomClientMessage } from '@/domain/types';
+import { createEmptyBoard, isValidMove } from '@/domain/gameEngine';
 import { onlineApi } from '@/utils/onlineApi';
 
 const ACTIVE_TURN_POLL_MS = 1000;
@@ -15,7 +16,7 @@ const OFFLINE_THRESHOLD = 5;
 const MOVE_CONFIRM_TIMEOUT_MS = 5000;
 
 export const useOnlineRoom = (roomId: string | null, playerId: string | null) => {
-  const [squares, setSquares] = useState<BoardState>(Array(9).fill(null));
+  const [squares, setSquares] = useState<BoardState>(createEmptyBoard);
   const [currentPlayer, setCurrentPlayer] = useState<Player>('X');
   const [winner, setWinner] = useState<GameResult>(null);
   const [opponentConnected, setOpponentConnected] = useState(true);
@@ -182,7 +183,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   }, [roomId, playerId]);
 
   const makeMove = useCallback(async (index: number) => {
-    if (yourRole !== currentPlayer || !roomId || !playerId) return false;
+    if (winner !== null || yourRole !== currentPlayer || !roomId || !playerId || !isValidMove(squares, index)) return false;
     pendingMoveRef.current = { index, player: currentPlayer };
     setSquares((prev) => prev.map((cell, i) => (i === index ? currentPlayer : cell)));
 
@@ -215,7 +216,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
     } finally { if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current); moveConfirmTimeoutRef.current = null; }
     return false;
-  }, [yourRole, currentPlayer, roomId, playerId]);
+  }, [yourRole, currentPlayer, roomId, playerId, squares, winner]);
 
   const restart = useCallback(async (currentRole: Player | null) => {
     if (!roomId || !playerId) return false;
@@ -227,7 +228,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       const { response: res, data } = await onlineApi.restart(roomId, playerId);
       if (res.ok) {
         if (data.waitingForOpponent) { setRestartRequestedBy(currentRole); return false; }
-        setSquares(Array(9).fill(null)); setCurrentPlayer('X'); setWinner(null); setRestartRequestedBy(null); pendingMoveRef.current = null;
+        setSquares(createEmptyBoard()); setCurrentPlayer('X'); setWinner(null); setRestartRequestedBy(null); pendingMoveRef.current = null;
         return true;
       }
     } catch { /* WebSocket session supplies retry/reconnect; legacy HTTP callers may retry. */ }
@@ -245,7 +246,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   }, [applyState]);
 
   const resetRoom = useCallback(() => {
-    setSquares(Array(9).fill(null));
+    setSquares(createEmptyBoard());
     setCurrentPlayer('X');
     setWinner(null);
     setOpponentConnected(true);
