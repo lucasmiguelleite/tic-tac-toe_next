@@ -21,7 +21,7 @@ export const useOnlineGame = (nickname?: string) => {
   const { applyState, setRealtimeSend, pollLobby, pollGameState, fetchState, setInitialRoomState, resetRoom, restart: restartRoom } = room;
   const { enterQueue: enterQueueRequest, exitQueue: exitQueueRequest, pollQueue, queueId } = queue;
 
-  const realtimeSend = useOnlineRealtime(
+  const realtime = useOnlineRealtime(
     roomId,
     playerId,
     phase === 'lobby' || phase === 'playing',
@@ -32,11 +32,11 @@ export const useOnlineGame = (nickname?: string) => {
     },
   );
   useEffect(() => {
-    setRealtimeSend(realtimeSend);
+    setRealtimeSend(realtime.send);
     return () => setRealtimeSend(null);
-  }, [setRealtimeSend, realtimeSend]);
+  }, [setRealtimeSend, realtime.send]);
 
-  useOnlineQueueRealtime(queueId, phase === 'in-queue', (rId, pId, role) => {
+  const queueRealtime = useOnlineQueueRealtime(queueId, phase === 'in-queue', (rId, pId, role) => {
     setRoomId(rId); setPlayerId(pId); setInitialRoomState(role, nickname || ''); setPhase('matched');
   });
 
@@ -44,29 +44,29 @@ export const useOnlineGame = (nickname?: string) => {
   // authoritative recovery path for proxies, browsers, or deployments where
   // a socket cannot be established or is silently dropped.
   useEffect(() => {
-    if (phase !== 'lobby') return;
+    if (phase !== 'lobby' || realtime.connected) return;
     return pollLobby((state) => {
       applyState(state);
       setPhase('playing');
     });
-  }, [phase, pollLobby, applyState]);
+  }, [phase, realtime.connected, pollLobby, applyState]);
 
   useEffect(() => {
-    if (phase !== 'playing') return;
+    if (phase !== 'playing' || realtime.connected) return;
     return pollGameState(
       () => setPhase('opponent-disconnected'),
       () => { setError('Room expired'); setPhase('error'); },
     );
-  }, [phase, pollGameState]);
+  }, [phase, realtime.connected, pollGameState]);
 
   useEffect(() => {
-    if (phase !== 'in-queue') return;
+    if (phase !== 'in-queue' || queueRealtime.connected) return;
     return pollQueue(
       queueId,
       (rId, pId, role) => { setRoomId(rId); setPlayerId(pId); setInitialRoomState(role, nickname || ''); setPhase('matched'); },
       () => { setError('Queue entry expired'); setPhase('error'); },
     );
-  }, [phase, pollQueue, queueId, setInitialRoomState, nickname]);
+  }, [phase, queueRealtime.connected, pollQueue, queueId, setInitialRoomState, nickname]);
 
   // Matched → playing transition; the socket delivers the initial state.
   useEffect(() => {

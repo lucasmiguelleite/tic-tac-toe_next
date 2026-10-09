@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const INITIAL_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 30000;
@@ -14,6 +14,7 @@ export const onlineRealtimeUrl = (params: Record<string, string>): string | null
 /** Shared WebSocket transport with exponential reconnect and latest callback. */
 export const useReconnectableWebSocket = <TIncoming, TOutgoing>(url: string | null, enabled: boolean, onMessage: (message: TIncoming) => void) => {
   const socketRef = useRef<WebSocket | null>(null);
+  const [connected, setConnected] = useState(false);
   const onMessageRef = useRef(onMessage);
   useEffect(() => { onMessageRef.current = onMessage; }, [onMessage]);
   useEffect(() => {
@@ -22,15 +23,16 @@ export const useReconnectableWebSocket = <TIncoming, TOutgoing>(url: string | nu
     const connect = () => {
       if (disposed) return;
       socket = new WebSocket(url); socketRef.current = socket;
-      socket.addEventListener('open', () => { delay = INITIAL_RECONNECT_MS; });
+      socket.addEventListener('open', () => { delay = INITIAL_RECONNECT_MS; setConnected(true); });
       socket.addEventListener('message', (event) => { try { onMessageRef.current(JSON.parse(event.data) as TIncoming); } catch { /* polling re-synchronizes */ } });
-      socket.addEventListener('close', () => { if (!disposed) { retry = setTimeout(connect, delay); delay = Math.min(delay * 2, MAX_RECONNECT_MS); } });
+      socket.addEventListener('close', () => { setConnected(false); if (!disposed) { retry = setTimeout(connect, delay); delay = Math.min(delay * 2, MAX_RECONNECT_MS); } });
     };
     connect();
-    return () => { disposed = true; if (retry) clearTimeout(retry); socket?.close(); socketRef.current = null; };
+    return () => { disposed = true; setConnected(false); if (retry) clearTimeout(retry); socket?.close(); socketRef.current = null; };
   }, [url, enabled]);
-  return useCallback((message: TOutgoing) => {
+  const send = useCallback((message: TOutgoing) => {
     if (socketRef.current?.readyState !== WebSocket.OPEN) return false;
     socketRef.current.send(JSON.stringify(message)); return true;
   }, []);
+  return { send, connected };
 };

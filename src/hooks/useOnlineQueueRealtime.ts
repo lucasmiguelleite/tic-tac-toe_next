@@ -10,7 +10,7 @@ export const useOnlineQueueRealtime = (
   onMatch: (roomId: string, playerId: string, role: Player) => void,
 ) => {
   const url = useMemo(() => queueId ? onlineRealtimeUrl({ queueId }) : null, [queueId]);
-  useReconnectableWebSocket<QueueServerMessage, never>(url, enabled, (message) => {
+  return useReconnectableWebSocket<QueueServerMessage, never>(url, enabled, (message) => {
     if (message.type === 'queue' && message.queue.matched && message.queue.matchResult) {
       const { roomId, playerId, playerRole } = message.queue.matchResult;
       onMatch(roomId, playerId, playerRole);
