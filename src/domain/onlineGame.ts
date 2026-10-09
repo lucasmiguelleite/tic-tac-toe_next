@@ -1,6 +1,6 @@
 import { BoardState, OnlineRoomState, Player } from './types';
 import { calculateWinner, checkDraw, makeMove } from './gameEngine';
-import { disconnectPlayer, getOpponentSeen, getRoom, updatePlayerSeen, updateRoom } from './onlineStore';
+import { disconnectPlayer, getOpponentSeen, getRoom, updatePlayerSeen, updateRoom, withRoomLock } from './onlineStore';
 import { publishRoomUpdated } from './onlineEvents';
 
 const DISCONNECT_THRESHOLD_MS = 15000;
@@ -33,6 +33,7 @@ export const getOnlineRoomState = async (roomId: string, playerId: string): Prom
 };
 
 export const moveOnlineGame = async (roomId: string, playerId: string, index: number): Promise<Result<Record<string, unknown>>> => {
+  return withRoomLock(roomId, async () => {
   const room = await getRoom(roomId);
   if (!room) return { ok: false, status: 404, error: 'Room not found' };
   if (room.status !== 'playing') return { ok: false, status: 409, error: 'Game is not in progress' };
@@ -49,9 +50,11 @@ export const moveOnlineGame = async (roomId: string, playerId: string, index: nu
   await updatePlayerSeen(roomId, playerId, room.playerX, room.playerO);
   await publishRoomUpdated(roomId);
   return { ok: true, data: { board, currentPlayer, winner: result } };
+  }, { ok: false, status: 409, error: 'Room is busy' });
 };
 
 export const restartOnlineGame = async (roomId: string, playerId: string): Promise<Result<{ waitingForOpponent: boolean; board?: BoardState; currentPlayer?: Player; winner?: null }>> => {
+  return withRoomLock(roomId, async () => {
   const room = await getRoom(roomId);
   if (!room) return { ok: false, status: 404, error: 'Room not found' };
   const role = roleFor(playerId, room.playerX, room.playerO);
@@ -69,6 +72,7 @@ export const restartOnlineGame = async (roomId: string, playerId: string): Promi
   });
   await publishRoomUpdated(roomId);
   return { ok: true, data: { waitingForOpponent: false, board: Array(9).fill(null) as BoardState, currentPlayer: 'X', winner: null } };
+  }, { ok: false, status: 409, error: 'Room is busy' });
 };
 
 export const disconnectOnlinePlayer = async (roomId: string, playerId: string) => {

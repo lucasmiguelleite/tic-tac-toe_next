@@ -9,6 +9,7 @@ vi.mock('@/domain/onlineStore', () => ({
   disconnectPlayer: vi.fn(),
   updatePlayerSeen: vi.fn(),
   getOpponentSeen: vi.fn(),
+  withRoomLock: vi.fn(async (_roomId: string, callback: () => Promise<unknown>) => callback()),
 }));
 
 vi.mock('@/domain/onlineStorage', () => ({

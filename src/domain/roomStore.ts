@@ -20,7 +20,7 @@ const ROOM_LOCK_TTL_SECONDS = 5;
 const seenKey = (roomId: string, role: Player) => `${SEEN_KEY_PREFIX}${roomId}:${role}`;
 const roomLockKey = (roomId: string) => `tic-tac-toe:room-lock:${roomId}`;
 
-const withRoomLock = async <T>(roomId: string, callback: () => Promise<T>, fallback: T): Promise<T> => {
+export const withRoomLock = async <T>(roomId: string, callback: () => Promise<T>, fallback: T): Promise<T> => {
   if (!await setIfNotExists(roomLockKey(roomId), '1', ROOM_LOCK_TTL_SECONDS)) return fallback;
   try { return await callback(); } finally { await deleteValue(roomLockKey(roomId)); }
 };
