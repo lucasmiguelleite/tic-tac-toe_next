@@ -114,11 +114,15 @@ export const useOnlineGame = (nickname?: string) => {
   }, [nickname, setInitialRoomState]);
 
   const enterQueue = useCallback(async () => {
-    await enterQueueRequest(
+    const entered = await enterQueueRequest(
       nickname,
       (rId, pId, role) => { setRoomId(rId); setPlayerId(pId); setInitialRoomState(role, nickname || ''); setPhase('matched'); },
       () => setPhase('in-queue'),
     );
+    if (!entered) {
+      setError('Failed to enter queue');
+      setPhase('error');
+    }
   }, [nickname, enterQueueRequest, setInitialRoomState]);
 
   const exitQueueAction = useCallback(async () => {

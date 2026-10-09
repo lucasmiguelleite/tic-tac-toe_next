@@ -74,6 +74,14 @@ describe('useOnlineGame', () => {
     expect(result.current.phase).toBe('in-queue');
   });
 
+  it('shows an error when entering the queue fails', async () => {
+    vi.spyOn(global, 'fetch').mockRejectedValueOnce(new Error('offline'));
+    const { result } = renderHook(() => useOnlineGame());
+    await act(async () => result.current.enterQueue());
+    expect(result.current.phase).toBe('error');
+    expect(result.current.error).toBe('Failed to enter queue');
+  });
+
   it('enters matched phase when match found immediately', async () => {
     mockFetch({ queueId: 'q2', matched: true, matchResult: { roomId: 'R1', playerId: 'p1', playerRole: 'X' } });
     const { result } = renderHook(() => useOnlineGame());

@@ -19,8 +19,9 @@ export const useOnlineQueue = () => {
         setQueueId(data.queueId);
         onQueued(data.queueId);
       }
+      return true;
     } catch {
-      // Caller handles error
+      return false;
     }
   }, []);
 
