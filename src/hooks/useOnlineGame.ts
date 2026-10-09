@@ -18,7 +18,7 @@ export const useOnlineGame = (nickname?: string) => {
   const room = useOnlineRoom(roomId, playerId);
   const queue = useOnlineQueue();
   const { disconnect } = useOnlineConnection(roomId, playerId);
-  const { applyState, setRealtimeSend, pollLobby, pollGameState, fetchState, setInitialRoomState, resetRoom, restart: restartRoom } = room;
+  const { applyState, setRealtimeSend, pollLobby, pollGameState, fetchState, setInitialRoomState, resetRoom, restart: restartRoom, makeMove: makeRoomMove } = room;
   const { enterQueue: enterQueueRequest, exitQueue: exitQueueRequest, pollQueue, queueId } = queue;
 
   const realtime = useOnlineRealtime(
@@ -139,6 +139,14 @@ export const useOnlineGame = (nickname?: string) => {
     await restartRoom(room.yourRole);
   }, [restartRoom, room.yourRole]);
 
+  const makeMove = useCallback(async (index: number) => {
+    const moved = await makeRoomMove(index);
+    if (!moved) {
+      setError('Failed to make move');
+      setPhase('error');
+    }
+  }, [makeRoomMove]);
+
   const exit = useCallback(() => {
     disconnect();
     setPhase('select-mode');
@@ -162,7 +170,7 @@ export const useOnlineGame = (nickname?: string) => {
     connectionStatus: room.connectionStatus,
     createRoom, joinRoom, enterQueue,
     exitQueue: exitQueueAction,
-    makeMove: room.makeMove,
+    makeMove,
     restart, exit,
   };
 };

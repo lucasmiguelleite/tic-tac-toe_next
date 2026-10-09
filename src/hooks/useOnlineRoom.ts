@@ -182,7 +182,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   }, [roomId, playerId]);
 
   const makeMove = useCallback(async (index: number) => {
-    if (yourRole !== currentPlayer || !roomId || !playerId) return;
+    if (yourRole !== currentPlayer || !roomId || !playerId) return false;
     pendingMoveRef.current = { index, player: currentPlayer };
     setSquares((prev) => prev.map((cell, i) => (i === index ? currentPlayer : cell)));
 
@@ -195,16 +195,18 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     }, MOVE_CONFIRM_TIMEOUT_MS);
 
     if (realtimeSendRef.current) {
-      if (!realtimeSendRef.current({ type: 'move', index })) {
+      const sent = realtimeSendRef.current({ type: 'move', index });
+      if (!sent) {
         pendingMoveRef.current = null;
         setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
       }
-      return;
+      return sent;
     }
     try {
       const { response: res, data } = await onlineApi.move(roomId, playerId, index);
       if (res.ok) {
         setCurrentPlayer(data.currentPlayer); setWinner(data.winner); pendingMoveRef.current = null;
+        return true;
       } else {
         pendingMoveRef.current = null; setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
       }
@@ -212,6 +214,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       pendingMoveRef.current = null;
       setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
     } finally { if (moveConfirmTimeoutRef.current) clearTimeout(moveConfirmTimeoutRef.current); moveConfirmTimeoutRef.current = null; }
+    return false;
   }, [yourRole, currentPlayer, roomId, playerId]);
 
   const restart = useCallback(async (currentRole: Player | null) => {
