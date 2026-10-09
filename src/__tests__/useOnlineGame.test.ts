@@ -59,6 +59,14 @@ describe('useOnlineGame', () => {
     expect(result.current.yourRole).toBe('O');
   });
 
+  it('handles create room error', async () => {
+    mockFetch({ error: 'Unable to create room' }, false, 503);
+    const { result } = renderHook(() => useOnlineGame());
+    await act(async () => result.current.createRoom());
+    expect(result.current.phase).toBe('error');
+    expect(result.current.error).toBe('Unable to create room');
+  });
+
   it('handles join room error', async () => {
     mockFetch({ error: 'Room not found' }, false, 404);
     const { result } = renderHook(() => useOnlineGame());

@@ -82,7 +82,12 @@ export const useOnlineGame = (nickname?: string) => {
   const createRoom = useCallback(async () => {
     setPhase('creating-room');
     try {
-      const { data } = await onlineApi.createRoom(nickname);
+      const { response, data } = await onlineApi.createRoom(nickname);
+      if (!response.ok) {
+        setError(data.error || 'Failed to create room');
+        setPhase('error');
+        return;
+      }
       setRoomId(data.roomId);
       setPlayerId(data.playerId);
       setInitialRoomState(data.playerRole, data.nickname);
