@@ -46,7 +46,7 @@ describe('useOnlineGame', () => {
     const { result } = renderHook(() => useOnlineGame());
     await act(async () => result.current.createRoom());
     await act(async () => { await vi.advanceTimersByTimeAsync(100); });
-    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/api/online/room/state?'));
+    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/api/online/room/state?'), undefined);
     expect(result.current.phase).toBe('playing');
   });
 

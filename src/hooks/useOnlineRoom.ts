@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { BoardState, ConnectionStatus, GameResult, Player, RoomClientMessage } from '@/domain/types';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { onlineApi } from '@/utils/onlineApi';
 
 const ACTIVE_TURN_POLL_MS = 1000;
 const WAITING_TURN_POLL_MS = 2000;
@@ -59,8 +59,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
   const fetchState = useCallback(async () => {
     if (!roomId || !playerId) return;
     try {
-      const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
-      if (res.ok) applyState(await res.json());
+      const { response, data } = await onlineApi.roomState(roomId, playerId);
+      if (response.ok) applyState(data);
     } catch {
       // Will be retried by polling
     }
@@ -97,7 +97,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       if (!active || inFlight) return;
       inFlight = true;
       try {
-        const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
+        const { response: res, data } = await onlineApi.roomState(roomId, playerId);
         if (!active) return;
         if (res.status === 404) {
           active = false;
@@ -105,7 +105,6 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
           return;
         }
         if (res.ok) {
-          const data = await res.json();
           if (!active) return;
           applyState(data, true);
           if (!data.opponentConnected && data.roomStatus === 'playing') {
@@ -150,12 +149,11 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     const poll = async () => {
       if (!active) return;
       try {
-        const res = await fetch(`/api/online/room/state?roomId=${roomId}&playerId=${playerId}`);
+        const { response: res, data } = await onlineApi.roomState(roomId, playerId);
         if (!active) return;
         if (res.ok) {
           consecutiveErrors = 0;
           setConnectionStatus('connected');
-          const data = await res.json();
           if (!active) return;
           if (data.roomStatus === 'playing') onOpponentJoined(data);
         }
@@ -194,11 +192,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       return;
     }
     try {
-      const res = await fetchWithRetry('/api/online/room/move', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId, playerId, index }),
-      });
+      const { response: res, data } = await onlineApi.move(roomId, playerId, index);
       if (res.ok) {
-        const data = await res.json();
         setCurrentPlayer(data.currentPlayer); setWinner(data.winner); pendingMoveRef.current = null;
       } else {
         pendingMoveRef.current = null; setSquares((prev) => prev.map((cell, i) => (i === index ? null : cell)));
@@ -216,11 +211,8 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
       return false;
     }
     try {
-      const res = await fetchWithRetry('/api/online/room/restart', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ roomId, playerId }),
-      });
+      const { response: res, data } = await onlineApi.restart(roomId, playerId);
       if (res.ok) {
-        const data = await res.json();
         if (data.waitingForOpponent) { setRestartRequestedBy(currentRole); return false; }
         setSquares(Array(9).fill(null)); setCurrentPlayer('X'); setWinner(null); setRestartRequestedBy(null); pendingMoveRef.current = null;
         return true;
