@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { BoardState, ConnectionStatus, GameResult, Player } from '@/domain/types';
+import { BoardState, ConnectionStatus, GameResult, Player, RoomClientMessage } from '@/domain/types';
 import { fetchWithRetry } from '@/utils/fetchWithRetry';
 
 const ACTIVE_TURN_POLL_MS = 1000;
@@ -28,7 +28,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
 
   const pendingMoveRef = useRef<{ index: number; player: Player } | null>(null);
   const moveConfirmTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const realtimeSendRef = useRef<((message: Record<string, unknown>) => boolean) | null>(null);
+  const realtimeSendRef = useRef<((message: RoomClientMessage) => boolean) | null>(null);
 
   const applyState = useCallback((data: Record<string, unknown>, skipConnectedStatus = false) => {
     const serverBoard = data.board as BoardState;
@@ -229,7 +229,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     return false;
   }, [roomId, playerId]);
 
-  const setRealtimeSend = useCallback((send: ((message: Record<string, unknown>) => boolean) | null) => {
+  const setRealtimeSend = useCallback((send: ((message: RoomClientMessage) => boolean) | null) => {
     realtimeSendRef.current = send;
   }, []);
 

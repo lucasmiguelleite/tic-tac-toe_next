@@ -1,19 +1,19 @@
 'use client';
 
 import { useCallback, useEffect, useRef } from 'react';
+import { OnlineRoomState, RoomClientMessage, RoomServerMessage } from '@/domain/types';
 
 const INITIAL_RECONNECT_MS = 1000;
 const MAX_RECONNECT_MS = 30000;
 
 /**
- * Subscribes to room invalidation events. REST remains authoritative: each
- * event prompts a fresh state read, avoiding duplicated game rules on clients.
+ * Subscribes to authoritative room snapshots. Game rules remain server-side.
  */
 export const useOnlineRealtime = (
   roomId: string | null,
   playerId: string | null,
   enabled: boolean,
-  onState: (state: Record<string, unknown>) => void,
+  onState: (state: OnlineRoomState) => void,
 ) => {
   const socketRef = useRef<WebSocket | null>(null);
   const onStateRef = useRef(onState);
@@ -38,7 +38,7 @@ export const useOnlineRealtime = (
       });
       socket.addEventListener('message', (event) => {
         try {
-          const message = JSON.parse(event.data) as { type?: string; state?: Record<string, unknown> };
+          const message = JSON.parse(event.data) as RoomServerMessage;
           if (message.type === 'state' && message.state) onStateRef.current(message.state);
         } catch {
           // Ignore malformed events; the polling fallback will re-synchronize.
@@ -60,7 +60,7 @@ export const useOnlineRealtime = (
     };
   }, [roomId, playerId, enabled]);
 
-  return useCallback((message: Record<string, unknown>) => {
+  return useCallback((message: RoomClientMessage) => {
     if (socketRef.current?.readyState !== WebSocket.OPEN) return false;
     socketRef.current.send(JSON.stringify(message));
     return true;

@@ -46,3 +46,23 @@ export type OnlinePhase =
   | 'error';
 
 export type ConnectionStatus = 'connected' | 'reconnecting' | 'offline';
+
+/** Authoritative room snapshot returned by REST and delivered over WebSocket. */
+export type OnlineRoomState = {
+  board: BoardState;
+  currentPlayer: Player;
+  winner: GameResult;
+  roomStatus: RoomStatus;
+  opponentConnected: boolean;
+  yourRole: Player;
+  yourNickname: string;
+  opponentNickname: string;
+  restartRequestedBy: Player | null;
+  createdAt: number;
+};
+
+export type RoomClientMessage = { type: 'move'; index: number } | { type: 'restart' };
+export type RoomServerMessage =
+  | { type: 'state'; state: OnlineRoomState }
+  | { type: 'error'; error: string };
+export type QueueServerMessage = { type: 'queue'; queue: Pick<QueueEntry, 'matched' | 'matchResult'> };

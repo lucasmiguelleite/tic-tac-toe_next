@@ -35,6 +35,21 @@ describe('useOnlineGame', () => {
     expect(result.current.roomId).toBe('ABC123');
   });
 
+  it('starts lobby polling when realtime transport is unavailable', async () => {
+    const fetchSpy = vi.spyOn(global, 'fetch');
+    fetchSpy
+      .mockResolvedValueOnce({ ok: true, status: 201, json: () => Promise.resolve({ roomId: 'ABC123', playerId: 'p1', playerRole: 'X', nickname: 'player-p1' }) } as Response)
+      .mockResolvedValueOnce({ ok: true, status: 200, json: () => Promise.resolve({
+        board: Array(9).fill(null), currentPlayer: 'X', winner: null, roomStatus: 'playing',
+        opponentConnected: true, yourRole: 'X', yourNickname: 'player-p1', opponentNickname: 'player-p2', restartRequestedBy: null, createdAt: 1,
+      }) } as Response);
+    const { result } = renderHook(() => useOnlineGame());
+    await act(async () => result.current.createRoom());
+    await act(async () => { await vi.advanceTimersByTimeAsync(100); });
+    expect(fetchSpy).toHaveBeenCalledWith(expect.stringContaining('/api/online/room/state?'));
+    expect(result.current.phase).toBe('playing');
+  });
+
   it('joins a room and enters playing phase', async () => {
     mockFetch({ playerId: 'p2', playerRole: 'O', nickname: 'player-p2' });
     mockFetch({ board: Array(9).fill(null), currentPlayer: 'X', winner: null, yourRole: 'O', yourNickname: 'player-p2', opponentNickname: 'player-p1', opponentConnected: true, restartRequestedBy: null, roomStatus: 'playing' });

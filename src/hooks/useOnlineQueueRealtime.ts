@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { Player } from '@/domain/types';
+import { Player, QueueServerMessage } from '@/domain/types';
 
 export const useOnlineQueueRealtime = (
   queueId: string | null,
@@ -22,7 +22,7 @@ export const useOnlineQueueRealtime = (
       socket.addEventListener('open', () => { delay = 1000; });
       socket.addEventListener('message', (event) => {
         try {
-          const message = JSON.parse(event.data) as { type?: string; queue?: { matched: boolean; matchResult: { roomId: string; playerId: string; playerRole: Player } | null } };
+          const message = JSON.parse(event.data) as QueueServerMessage;
           if (message.type === 'queue' && message.queue?.matched && message.queue.matchResult) {
             const { roomId, playerId, playerRole } = message.queue.matchResult;
             onMatchRef.current(roomId, playerId, playerRole);

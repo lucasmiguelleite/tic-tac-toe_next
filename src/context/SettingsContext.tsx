@@ -71,7 +71,13 @@ export const SettingsProvider = ({ children }: { children: React.ReactNode }) =>
       (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
     const initialLocale = storedLocale ||
       (navigator.language.startsWith('pt') ? 'pt' : 'en');
-    const initialSound = storedSound ? { ...defaultSoundSettings, ...JSON.parse(storedSound) } : defaultSoundSettings;
+    let persistedSound: Partial<SoundSettings> = {};
+    try {
+      persistedSound = storedSound ? JSON.parse(storedSound) as Partial<SoundSettings> : {};
+    } catch {
+      localStorage.removeItem('soundSettings');
+    }
+    const initialSound = { ...defaultSoundSettings, ...persistedSound };
     const initialBoardStyle = (localStorage.getItem('boardStyle') as BoardStyle) || 'classic';
 
     /* eslint-disable react-hooks/set-state-in-effect --

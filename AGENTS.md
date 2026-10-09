@@ -52,7 +52,7 @@ src/
 │   └── api/online/              # API REST + endpoint WebSocket
 │       ├── room/{create,join,state,move,restart,disconnect}
 │       └── queue/{enter,poll,exit}
-└── __tests__/       # Vitest (jsdom environment)
+└── __tests__/       # Vitest (jsdom environment; 19 arquivos / 184 testes)
     ├── gameEngine.test.ts          # Regras puras do jogo
     ├── ai.test.ts                  # IA e strategy pattern
     ├── onlineStore.test.ts         # Stores de sala e fila
