@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { OnlinePhase } from '@/domain/types';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { onlineApi } from '@/utils/onlineApi';
 import { useOnlineRoom } from './useOnlineRoom';
 import { useOnlineQueue } from './useOnlineQueue';
 import { useOnlineConnection } from './useOnlineConnection';
@@ -82,12 +82,7 @@ export const useOnlineGame = (nickname?: string) => {
   const createRoom = useCallback(async () => {
     setPhase('creating-room');
     try {
-      const res = await fetchWithRetry('/api/online/room/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname }),
-      });
-      const data = await res.json();
+      const { data } = await onlineApi.createRoom(nickname);
       setRoomId(data.roomId);
       setPlayerId(data.playerId);
       setInitialRoomState(data.playerRole, data.nickname);
@@ -101,12 +96,7 @@ export const useOnlineGame = (nickname?: string) => {
   const joinRoom = useCallback(async (code: string) => {
     setPhase('joining-room');
     try {
-      const res = await fetchWithRetry('/api/online/room/join', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ roomId: code, nickname }),
-      });
-      const data = await res.json();
+      const { response: res, data } = await onlineApi.joinRoom(code, nickname);
       if (!res.ok) {
         setError(data.error || 'Failed to join room');
         setPhase('error');

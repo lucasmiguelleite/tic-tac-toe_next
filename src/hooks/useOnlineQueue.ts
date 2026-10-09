@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { Player } from '@/domain/types';
-import { fetchWithRetry } from '@/utils/fetchWithRetry';
+import { onlineApi } from '@/utils/onlineApi';
 
 const MAX_BACKOFF_MS = 30000;
 const JITTER_MAX_MS = 1000;
@@ -12,12 +12,7 @@ export const useOnlineQueue = () => {
 
   const enterQueue = useCallback(async (nickname: string | undefined, onMatch: (roomId: string, playerId: string, playerRole: Player) => void, onQueued: (queueId: string) => void) => {
     try {
-      const res = await fetchWithRetry('/api/online/queue/enter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nickname }),
-      });
-      const data = await res.json();
+      const { data } = await onlineApi.enterQueue(nickname);
       if (data.matched && data.matchResult) {
         onMatch(data.matchResult.roomId, data.matchResult.playerId, data.matchResult.playerRole);
       } else {
@@ -64,11 +59,7 @@ export const useOnlineQueue = () => {
 
   const exitQueue = useCallback(async (id: string | null) => {
     if (id) {
-      await fetch('/api/online/queue/exit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ queueId: id }),
-      });
+      await onlineApi.exitQueue(id);
     }
     setQueueId(null);
   }, []);
