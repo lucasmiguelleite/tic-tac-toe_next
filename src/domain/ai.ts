@@ -53,7 +53,7 @@ const optimalMove = (board: BoardState, aiPlayer: Player, humanPlayer: Player): 
   return move;
 };
 
-const randomMove = (board: BoardState, _aiPlayer: Player): number => {
+const randomMove = (board: BoardState): number => {
   const available = board.reduce<number[]>((acc, cell, i) => {
     if (!cell) acc.push(i);
     return acc;
@@ -66,7 +66,7 @@ type DifficultyStrategy = (board: BoardState, aiPlayer: Player, humanPlayer: Pla
 
 const difficultyStrategies: Record<Difficulty, DifficultyStrategy> = {
   easy: (board, aiPlayer, _humanPlayer) =>
-    Math.random() < 0.6 ? randomMove(board, aiPlayer) : optimalMove(board, aiPlayer, _humanPlayer),
+    Math.random() < 0.6 ? randomMove(board) : optimalMove(board, aiPlayer, _humanPlayer),
   medium: (board, aiPlayer, humanPlayer) =>
     Math.random() < 0.3 ? randomMove(board, aiPlayer) : optimalMove(board, aiPlayer, humanPlayer),
   hard: (board, aiPlayer, humanPlayer) =>
