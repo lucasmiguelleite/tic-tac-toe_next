@@ -62,7 +62,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     if (data.opponentNickname) setOpponentNickname(data.opponentNickname as string);
     setRestartRequestedBy((data.restartRequestedBy as Player) || null);
     if (data.createdAt) setCreatedAt((prev) => prev ?? (data.createdAt as number));
-  }, [clearPendingMove]);
+  }, []);
 
   const fetchState = useCallback(async () => {
     if (!roomId || !playerId) return;
@@ -251,7 +251,7 @@ export const useOnlineRoom = (roomId: string | null, playerId: string | null) =>
     setCreatedAt(null);
     setConnectionStatus('connected');
     clearPendingMove();
-  }, []);
+  }, [clearPendingMove]);
 
   return {
     squares, currentPlayer, winner, opponentConnected,
