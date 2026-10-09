@@ -81,7 +81,7 @@ src/
 │       ├── room/ (create, join, state, move, restart, disconnect)
 │       └── queue/ (enter, poll, exit)
 │
-└── __tests__/             # 19 arquivos / 186 testes
+└── __tests__/             # 19 arquivos / 187 testes
     ├── gameEngine.test.ts          # Regras do jogo
     ├── ai.test.ts                  # IA e strategy pattern
     ├── onlineStore.test.ts         # Stores de sala e fila
@@ -149,7 +149,7 @@ bun run build
 
 ## Testes
 
-186 testes, em 19 arquivos, cobrindo domain, hooks, context, utils e integração de API:
+187 testes, em 19 arquivos, cobrindo domain, hooks, context, utils e integração de API:
 
 ```bash
 bun run test           # roda todos os testes
