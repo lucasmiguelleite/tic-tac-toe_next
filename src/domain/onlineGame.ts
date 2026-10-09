@@ -1,4 +1,4 @@
-import { BoardState, Player } from './types';
+import { BoardState, OnlineRoomState, Player } from './types';
 import { calculateWinner, checkDraw, makeMove } from './gameEngine';
 import { disconnectPlayer, getOpponentSeen, getRoom, updatePlayerSeen, updateRoom } from './onlineStore';
 import { publishRoomUpdated } from './onlineEvents';
@@ -13,7 +13,7 @@ const roleFor = (playerId: string, playerX: string | null, playerO: string | nul
   playerX === playerId ? 'X' : playerO === playerId ? 'O' : null
 );
 
-export const getOnlineRoomState = async (roomId: string, playerId: string): Promise<Result<Record<string, unknown>>> => {
+export const getOnlineRoomState = async (roomId: string, playerId: string): Promise<Result<OnlineRoomState>> => {
   const room = await getRoom(roomId);
   if (!room) return { ok: false, status: 404, error: 'Room not found' };
   const yourRole = roleFor(playerId, room.playerX, room.playerO);
