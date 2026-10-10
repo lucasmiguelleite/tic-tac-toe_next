@@ -160,7 +160,21 @@ Os testes rodam automaticamente antes do build (`prebuild` script), garantindo q
 
 ## Deploy
 
-O deploy é feito na [Vercel](https://vercel.com) com build automático via Bun (detectado pelo campo `packageManager` no `package.json`). O `prebuild` garante que os testes passem antes de qualquer deploy.
+O deploy de produção é feito na [Vercel](https://vercel.com) pelo workflow do GitHub Actions, usando Bun (detectado pelo campo `packageManager` no `package.json`). O `prebuild` garante que os testes passem antes de qualquer deploy.
+
+### CI/CD
+
+O GitHub Actions valida automaticamente todo pull request e todo push para `main` com `lint`, testes e build. Deploys de produção são executados somente pelo gatilho manual **Run workflow**.
+
+Para exigir autorização de mantenedores antes do deploy, configure o ambiente `production` no repositório em **Settings → Environments** e adicione os mantenedores como **Required reviewers**. Também adicione os seguintes secrets de repositório:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+O job de deploy fica pendente após a validação até que um revisor autorizado aprove a execução.
+
+Desative o deploy automático da integração Git da Vercel para produção; caso permaneça ativo, um push para `main` poderá contornar a aprovação do ambiente do GitHub.
 
 ## Licença
 
