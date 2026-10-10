@@ -7,12 +7,28 @@ import {
   enterQueue,
   pollQueue,
   exitQueue,
+  getOnlinePlayerCount,
+  markPlayerOffline,
+  markPlayerOnline,
   cleanup,
   _resetStore,
 } from '@/domain/onlineStore';
 
 beforeEach(async () => {
   await _resetStore();
+});
+
+describe('online presence', () => {
+  it('counts active players and removes them when they leave', async () => {
+    expect(await getOnlinePlayerCount()).toBe(0);
+
+    await markPlayerOnline('player-one');
+    await markPlayerOnline('player-two');
+    expect(await getOnlinePlayerCount()).toBe(2);
+
+    await markPlayerOffline('player-one');
+    expect(await getOnlinePlayerCount()).toBe(1);
+  });
 });
 
 describe('createRoom', () => {

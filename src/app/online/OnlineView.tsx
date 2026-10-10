@@ -9,7 +9,9 @@ import OnlineGameActions from '../../components/OnlineGameActions';
 import OnlineMatchmaking from '../../components/OnlineMatchmaking';
 import OnlineLobby from '../../components/OnlineLobby';
 import OnlineQueue from '../../components/OnlineQueue';
+import OnlinePlayersIndicator from '../../components/OnlinePlayersIndicator';
 import { useOnlineGame } from '../../hooks/useOnlineGame';
+import { useOnlinePresence } from '../../hooks/useOnlinePresence';
 import { useGameSounds } from '../../hooks/useGameSounds';
 import { useTranslation } from '../../context/SettingsContext';
 import { getWinLine } from '../../domain/gameEngine';
@@ -28,6 +30,7 @@ const OnlineView = () => {
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
   const game = useOnlineGame(nicknameSet ? nickname : undefined);
+  const { onlinePlayers } = useOnlinePresence();
   const { t } = useTranslation();
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
@@ -106,6 +109,12 @@ const OnlineView = () => {
   return (
     <div>
       <Home />
+      <div className="flex justify-center -mt-6 mb-4">
+        <OnlinePlayersIndicator
+          count={onlinePlayers}
+          label={t('online.playersOnline', { count: String(onlinePlayers ?? 0) })}
+        />
+      </div>
       {game.phase === 'select-mode' && (
         <OnlineMatchmaking
           onCreateRoom={game.createRoom}

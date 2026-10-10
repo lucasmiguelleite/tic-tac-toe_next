@@ -7,6 +7,7 @@ type JoinRoomResponse = CreateRoomResponse;
 type QueueResponse = Pick<QueueEntry, 'queueId' | 'matched' | 'matchResult'>;
 type MoveResponse = { currentPlayer: Player; winner: GameResult };
 type RestartResponse = { waitingForOpponent: boolean; board?: BoardState; currentPlayer?: Player; winner?: null };
+type OnlinePresenceResponse = { count: number };
 
 const json = async <T>(input: string, init?: RequestInit): Promise<{ response: Response; data: T & ApiError }> => {
   const response = await fetchWithRetry(input, init);
@@ -26,4 +27,9 @@ export const onlineApi = {
   roomState: (roomId: string, playerId: string) => json<OnlineRoomState>(`/api/online/room/state?${new URLSearchParams({ roomId, playerId })}`),
   move: (roomId: string, playerId: string, index: number) => post<MoveResponse>('/api/online/room/move', { roomId, playerId, index }),
   restart: (roomId: string, playerId: string) => post<RestartResponse>('/api/online/room/restart', { roomId, playerId }),
+  updatePresence: (presenceId: string) => post<OnlinePresenceResponse>('/api/online/presence', { presenceId }),
+  onlinePlayerCount: () => json<OnlinePresenceResponse>('/api/online/presence'),
+  removePresence: (presenceId: string) => fetchWithRetry('/api/online/presence', {
+    method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ presenceId }), keepalive: true,
+  }).catch(() => undefined),
 };
