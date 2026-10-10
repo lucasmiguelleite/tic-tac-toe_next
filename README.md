@@ -164,7 +164,7 @@ O deploy de produção é feito na [Vercel](https://vercel.com) pelo workflow do
 
 ### CI/CD
 
-O GitHub Actions valida automaticamente todo pull request direcionado a `main` e todo push para `main` com `lint`, testes e build. Após uma validação bem-sucedida em `main`, o deploy de produção é solicitado automaticamente.
+O workflow de CI valida automaticamente cada pull request e push com `lint`, testes e build. O workflow de CD só inicia após uma execução bem-sucedida do CI em um push para `main`; pull requests nunca solicitam deploys.
 
 Os testes são executados uma única vez na etapa de validação; os builds do CI e da Vercel usam `SKIP_PREBUILD_TESTS=true` porque dependem dessa validação bem-sucedida.
 
