@@ -115,6 +115,32 @@ describe('onlineStorage env resolution', () => {
     expect(value).toBe('memory');
   });
 
+  it('falls back to in-memory storage when Vercel redacts Redis credentials during a local build', async () => {
+    const constructorMock = vi.fn();
+    class RedisMock {
+      constructor(options: unknown) {
+        constructorMock(options);
+      }
+
+      get = vi.fn();
+      set = vi.fn();
+      del = vi.fn();
+      keys = vi.fn();
+    }
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }));
+
+    process.env.UPSTASH_REDIS_REST_URL = '[SENSITIVE]';
+    process.env.UPSTASH_REDIS_REST_TOKEN = '[SENSITIVE]';
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+
+    const storage = await import('@/domain/onlineStorage');
+    await storage.setValue('k4', 'build-value', 10);
+
+    expect(constructorMock).not.toHaveBeenCalled();
+    expect(await storage.getValue<string>('k4')).toBe('build-value');
+  });
+
   it('delivers in-memory realtime messages and removes unsubscribed listeners', async () => {
     delete process.env.UPSTASH_REDIS_REST_URL;
     delete process.env.UPSTASH_REDIS_REST_TOKEN;

@@ -9,7 +9,19 @@ const memoryStore = new Map<string, MemoryEntry>();
 
 const redisRestUrl = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
 const redisRestToken = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
-const hasRedisEnv = Boolean(redisRestUrl && redisRestToken);
+const hasValidRedisUrl = (value: string | undefined): value is string => {
+  if (!value) return false;
+
+  try {
+    return new URL(value).protocol === 'https:';
+  } catch {
+    return false;
+  }
+};
+const hasValidRedisToken = (value: string | undefined): value is string => (
+  Boolean(value) && value !== '[SENSITIVE]'
+);
+const hasRedisEnv = hasValidRedisUrl(redisRestUrl) && hasValidRedisToken(redisRestToken);
 const redis = hasRedisEnv ? new Redis({ url: redisRestUrl, token: redisRestToken }) : null;
 const memorySubscribers = new Map<string, Set<(message: string) => void>>();
 
