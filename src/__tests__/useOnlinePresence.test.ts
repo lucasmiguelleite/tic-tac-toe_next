@@ -8,14 +8,20 @@ const response = (data: unknown) => ({
 }) as Response;
 
 describe('useOnlinePresence', () => {
+  const originalSendBeacon = navigator.sendBeacon;
+  let sendBeaconMock: ReturnType<typeof vi.fn>;
+
   beforeEach(() => {
     vi.useFakeTimers();
     vi.spyOn(global, 'fetch').mockResolvedValue(response({ count: 2 }));
+    sendBeaconMock = vi.fn().mockReturnValue(true);
+    Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: sendBeaconMock });
   });
 
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    Object.defineProperty(navigator, 'sendBeacon', { configurable: true, value: originalSendBeacon });
   });
 
   it('registers the player and exposes the authoritative online count', async () => {
@@ -49,5 +55,17 @@ describe('useOnlinePresence', () => {
       await vi.advanceTimersByTimeAsync(5_000);
     });
     expect(result.current.onlinePlayers).toBe(3);
+  });
+
+  it('sends a leave beacon when the browser tab closes', async () => {
+    renderHook(() => useOnlinePresence());
+    await act(async () => {});
+
+    act(() => window.dispatchEvent(new Event('beforeunload')));
+
+    expect(sendBeaconMock).toHaveBeenCalledWith(
+      '/api/online/presence',
+      expect.stringContaining('"action":"leave"'),
+    );
   });
 });
