@@ -164,7 +164,9 @@ O deploy de produção é feito na [Vercel](https://vercel.com) pelo workflow do
 
 ### CI/CD
 
-O GitHub Actions valida automaticamente todo pull request e todo push para `main` com `lint`, testes e build. Deploys de produção são executados somente pelo gatilho manual **Run workflow**.
+O GitHub Actions valida automaticamente todo pull request direcionado a `main` e todo push para `main` com `lint`, testes e build. Após uma validação bem-sucedida em `main`, o deploy de produção é solicitado automaticamente.
+
+Proteja a branch `main` em **Settings → Rules → Rulesets** (ou **Branches**) exigindo pull requests e o status check `Lint, test, and build` antes do merge.
 
 Para exigir autorização de mantenedores antes do deploy, configure o ambiente `production` no repositório em **Settings → Environments** e adicione os mantenedores como **Required reviewers**. Também adicione os seguintes secrets de repositório:
 
@@ -172,7 +174,7 @@ Para exigir autorização de mantenedores antes do deploy, configure o ambiente 
 - `VERCEL_ORG_ID`
 - `VERCEL_PROJECT_ID`
 
-O job de deploy fica pendente após a validação até que um revisor autorizado aprove a execução.
+O job de deploy fica pendente após a validação até que um revisor autorizado clique em **Approve and deploy**. Habilite também a opção de impedir autoaprovação para que quem iniciou o deploy não possa aprová-lo.
 
 Desative o deploy automático da integração Git da Vercel para produção; caso permaneça ativo, um push para `main` poderá contornar a aprovação do ambiente do GitHub.
 
