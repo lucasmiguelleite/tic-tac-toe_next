@@ -40,11 +40,19 @@ export const useOnlinePresence = (): UseOnlinePresenceResult => {
     void heartbeat();
     const heartbeatId = setInterval(() => void heartbeat(), PRESENCE_REFRESH_MS);
     const countId = setInterval(() => void refreshCount(), COUNT_REFRESH_MS);
+    const handleUnload = () => {
+      navigator.sendBeacon?.(
+        '/api/online/presence',
+        JSON.stringify({ presenceId, action: 'leave' }),
+      );
+    };
+    window.addEventListener('beforeunload', handleUnload);
 
     return () => {
       active = false;
       clearInterval(heartbeatId);
       clearInterval(countId);
+      window.removeEventListener('beforeunload', handleUnload);
       void onlineApi.removePresence(presenceId);
     };
   }, [presenceId]);

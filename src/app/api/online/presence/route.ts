@@ -17,9 +17,14 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const { presenceId } = await request.json().catch(() => ({}));
+  const { presenceId, action } = await request.json().catch(() => ({}));
   if (!isValidPresenceId(presenceId)) {
     return NextResponse.json({ error: 'presenceId is required' }, { status: 400 });
+  }
+
+  if (action === 'leave') {
+    await markPlayerOffline(presenceId);
+    return countResponse();
   }
 
   await markPlayerOnline(presenceId);
