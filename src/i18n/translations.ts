@@ -64,6 +64,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "boardStyle.neon": "Neon",
     "boardStyle.chalk": "Chalk",
     "online.roomExpires": "This room expires in:",
+    "online.playersOnline": "{count} players online",
   },
   pt: {
     "site.title": "Jogo da Velha #",
@@ -128,6 +129,7 @@ const translations: Record<Locale, Record<string, string>> = {
     "boardStyle.neon": "Neon",
     "boardStyle.chalk": "Lousa",
     "online.roomExpires": "Esta sala expira em:",
+    "online.playersOnline": "{count} jogadores online",
   },
 };
 
