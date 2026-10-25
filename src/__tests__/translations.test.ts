@@ -30,4 +30,9 @@ describe('translate', () => {
     expect(translate('en', 'online.playersOnline', { count: '3' })).toBe('3 players online');
     expect(translate('pt', 'online.playersOnline', { count: '3' })).toBe('3 jogadores online');
   });
+
+  it('translates the online-unavailable screen', () => {
+    expect(translate('en', 'online.unavailableTitle')).toBe('Online multiplayer is unavailable');
+    expect(translate('pt', 'online.unavailableTitle')).toBe('O modo multiplayer online está indisponível');
+  });
 });

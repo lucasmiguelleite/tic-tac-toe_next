@@ -14,6 +14,7 @@ const ENV_KEYS: EnvKeys[] = [
 ];
 
 const ORIGINAL_ENV = { ...process.env };
+const ORIGINAL_NODE_ENV = process.env.NODE_ENV;
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -25,6 +26,7 @@ afterEach(() => {
       process.env[key] = ORIGINAL_ENV[key];
     }
   }
+  process.env.NODE_ENV = ORIGINAL_NODE_ENV;
 });
 
 describe('onlineStorage env resolution', () => {
@@ -113,6 +115,34 @@ describe('onlineStorage env resolution', () => {
 
     expect(constructorMock).not.toHaveBeenCalled();
     expect(value).toBe('memory');
+  });
+
+  it('reports unavailable storage in production when Redis is not configured', async () => {
+    delete process.env.UPSTASH_REDIS_REST_URL;
+    delete process.env.UPSTASH_REDIS_REST_TOKEN;
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+    process.env.NODE_ENV = 'production';
+
+    const storage = await import('@/domain/onlineStorage');
+
+    await expect(storage.isOnlineStorageAvailable()).resolves.toBe(false);
+  });
+
+  it('reports unavailable storage when the Redis health check fails', async () => {
+    class RedisMock {
+      ping = vi.fn(async () => { throw new Error('Upstash unavailable'); });
+    }
+    vi.doMock('@upstash/redis', () => ({ Redis: RedisMock }));
+
+    process.env.UPSTASH_REDIS_REST_URL = 'https://upstash.example.com';
+    process.env.UPSTASH_REDIS_REST_TOKEN = 'upstash-token';
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+
+    const storage = await import('@/domain/onlineStorage');
+
+    await expect(storage.isOnlineStorageAvailable()).resolves.toBe(false);
   });
 
   it('falls back to in-memory storage when Vercel redacts Redis credentials during a local build', async () => {

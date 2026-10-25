@@ -25,6 +25,21 @@ const hasRedisEnv = hasValidRedisUrl(redisRestUrl) && hasValidRedisToken(redisRe
 const redis = hasRedisEnv ? new Redis({ url: redisRestUrl, token: redisRestToken }) : null;
 const memorySubscribers = new Map<string, Set<(message: string) => void>>();
 
+/**
+ * Online games need shared storage in production. The in-memory implementation
+ * is intentionally retained for local development and tests only.
+ */
+export const isOnlineStorageAvailable = async (): Promise<boolean> => {
+  if (!redis) return process.env.NODE_ENV !== 'production';
+
+  try {
+    await redis.ping();
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const isExpired = (entry: MemoryEntry, now = Date.now()) => (
   entry.expiresAt !== null && entry.expiresAt <= now
 );

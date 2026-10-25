@@ -26,12 +26,12 @@ const formatCountdown = (seconds: number) => {
   return `${m}:${s.toString().padStart(2, '0')}`;
 };
 
-const OnlineView = () => {
+const OnlineGameView = () => {
+  const { t } = useTranslation();
   const [nickname, setNickname] = useState('');
   const [nicknameSet, setNicknameSet] = useState(false);
   const game = useOnlineGame(nicknameSet ? nickname : undefined);
   const { onlinePlayers } = useOnlinePresence();
-  const { t } = useTranslation();
   const prevPhaseRef = useRef(game.phase);
   const prevRestartRef = useRef<Player | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -194,6 +194,22 @@ const OnlineView = () => {
           </button>
         </div>
       )}
+    </div>
+  );
+};
+
+const OnlineView = ({ onlineAvailable }: { onlineAvailable: boolean }) => {
+  const { t } = useTranslation();
+
+  if (onlineAvailable) return <OnlineGameView />;
+
+  return (
+    <div>
+      <Home />
+      <main className="mx-10 flex min-h-[50vh] flex-col items-center justify-center text-center">
+        <h1 className="mb-4 text-3xl font-bold text-red-500">{t('online.unavailableTitle')}</h1>
+        <p className="max-w-md text-lg text-gray-600 dark:text-gray-300">{t('online.unavailableDescription')}</p>
+      </main>
     </div>
   );
 };

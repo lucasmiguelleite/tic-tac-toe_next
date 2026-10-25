@@ -65,6 +65,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "boardStyle.chalk": "Chalk",
     "online.roomExpires": "This room expires in:",
     "online.playersOnline": "{count} players online",
+    "online.unavailableTitle": "Online multiplayer is unavailable",
+    "online.unavailableDescription": "Please try again in a few moments.",
   },
   pt: {
     "site.title": "Jogo da Velha #",
@@ -130,6 +132,8 @@ const translations: Record<Locale, Record<string, string>> = {
     "boardStyle.chalk": "Lousa",
     "online.roomExpires": "Esta sala expira em:",
     "online.playersOnline": "{count} jogadores online",
+    "online.unavailableTitle": "O modo multiplayer online está indisponível",
+    "online.unavailableDescription": "Por favor, tente novamente em alguns instantes.",
   },
 };
 
