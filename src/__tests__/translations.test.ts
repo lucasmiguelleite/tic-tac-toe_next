@@ -26,6 +26,11 @@ describe('translate', () => {
     expect(translate('en', 'status.itsTurn', { player: 'X' })).toBe("It's X turn");
   });
 
+  it('translates the back action', () => {
+    expect(translate('en', 'actions.back')).toBe('Back');
+    expect(translate('pt', 'actions.back')).toBe('Voltar');
+  });
+
   it('translates the online player count', () => {
     expect(translate('en', 'online.playersOnline', { count: '3' })).toBe('3 players online');
     expect(translate('pt', 'online.playersOnline', { count: '3' })).toBe('3 jogadores online');

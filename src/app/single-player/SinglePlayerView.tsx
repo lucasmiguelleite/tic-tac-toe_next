@@ -24,6 +24,7 @@ const SinglePlayerView = () => {
     playerSelected,
     selectDifficulty,
     selectPlayer,
+    backToDifficulty,
   } = useSinglePlayerGame();
 
   useGameSounds({ squares, winner, playerRole: player });
@@ -32,9 +33,9 @@ const SinglePlayerView = () => {
     <div>
       <Home />
       {!difficultySelected ? (
-        <DifficultySelect onSelect={selectDifficulty} />
+        <DifficultySelect onSelect={selectDifficulty} onBack={() => redirect('/')} />
       ) : !playerSelected ? (
-        <PlayerSelect onSelect={selectPlayer} />
+        <PlayerSelect onSelect={selectPlayer} onBack={backToDifficulty} />
       ) : (
         <div className="flex flex-col">
           <GameStatus winner={winner} currentPlayer={currentPlayer} />

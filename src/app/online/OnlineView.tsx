@@ -99,6 +99,13 @@ const OnlineGameView = () => {
               >
                 <p className="font-bold">{t('online.continue')}</p>
               </button>
+              <button
+                type="button"
+                onClick={() => redirect('/')}
+                className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-40 h-12 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
+              >
+                <p className="font-bold">{t('actions.back')}</p>
+              </button>
             </div>
           </div>
         </div>
@@ -209,6 +216,13 @@ const OnlineView = ({ onlineAvailable }: { onlineAvailable: boolean }) => {
       <main className="mx-10 flex min-h-[50vh] flex-col items-center justify-center text-center">
         <h1 className="mb-4 text-3xl font-bold text-red-500">{t('online.unavailableTitle')}</h1>
         <p className="max-w-md text-lg text-gray-600 dark:text-gray-300">{t('online.unavailableDescription')}</p>
+        <button
+          type="button"
+          onClick={() => redirect('/')}
+          className="mt-8 h-12 w-40 rounded-full border border-gray-300 text-center hover:bg-gray-600 hover:text-white dark:border-gray-600 dark:hover:bg-gray-500"
+        >
+          <p className="font-bold">{t('actions.back')}</p>
+        </button>
       </main>
     </div>
   );

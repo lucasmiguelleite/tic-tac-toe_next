@@ -16,6 +16,14 @@ describe('useSinglePlayerGame', () => {
     expect(result.current.playerSelected).toBe(false);
   });
 
+  it('returns to difficulty selection from player selection', () => {
+    const { result } = renderHook(() => useSinglePlayerGame());
+    act(() => result.current.selectDifficulty('hard'));
+    act(() => result.current.backToDifficulty());
+    expect(result.current.difficultySelected).toBe(false);
+    expect(result.current.playerSelected).toBe(false);
+  });
+
   it('enters game after player selection', () => {
     const { result } = renderHook(() => useSinglePlayerGame());
     act(() => result.current.selectDifficulty('hard'));

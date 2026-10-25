@@ -54,6 +54,11 @@ export const useSinglePlayerGame = () => {
     setPlayerSelected(true);
   }, []);
 
+  const backToDifficulty = useCallback(() => {
+    setPlayerSelected(false);
+    setDifficultySelected(false);
+  }, []);
+
   return {
     squares,
     currentPlayer,
@@ -65,5 +70,6 @@ export const useSinglePlayerGame = () => {
     playerSelected,
     selectDifficulty,
     selectPlayer,
+    backToDifficulty,
   };
 };

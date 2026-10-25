@@ -5,7 +5,7 @@ import { useTranslation } from '@/context/SettingsContext';
 
 const players: Player[] = ['X', 'O'];
 
-const PlayerSelect = ({ onSelect }: { onSelect: (p: Player) => void }) => {
+const PlayerSelect = ({ onSelect, onBack }: { onSelect: (p: Player) => void; onBack: () => void }) => {
   const { t } = useTranslation();
   return (
     <div className="relative">
@@ -13,7 +13,7 @@ const PlayerSelect = ({ onSelect }: { onSelect: (p: Player) => void }) => {
         <div className="inline-flex justify-center">
           <p className="font-bold text-4xl mb-10 text-center">{t('player.select')}</p>
         </div>
-        <div className="inline-flex columns-xs justify-center mb-12">
+        <div className="flex justify-center">
           {players.map((p) => (
             <button
               key={p}
@@ -23,6 +23,15 @@ const PlayerSelect = ({ onSelect }: { onSelect: (p: Player) => void }) => {
               <p className="font-bold text-2xl">{p}</p>
             </button>
           ))}
+        </div>
+        <div className="flex justify-center mt-4 mb-12">
+          <button
+            type="button"
+            onClick={onBack}
+            className="border border-gray-300 dark:border-gray-600 rounded-full text-center w-52 h-20 hover:bg-gray-600 hover:text-white dark:hover:bg-gray-500"
+          >
+            <p className="font-bold text-2xl">{t('actions.back')}</p>
+          </button>
         </div>
       </div>
     </div>
